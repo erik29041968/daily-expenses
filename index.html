@@ -9,7 +9,7 @@
         body { background: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000') no-repeat center center fixed; background-size: cover; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4" onload="fetchExpenses()">
     <div class="max-w-md mx-auto bg-white/90 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
         <h1 class="text-2xl font-bold text-gray-800 mb-4">Our Expenses</h1>
         
@@ -17,11 +17,32 @@
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount">
         <button onclick="addExpense()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Add Expense</button>
 
-        <div id="list" class="mt-6 space-y-2"></div>
+        <div id="list" class="mt-6 space-y-2">
+            <p class="text-center text-gray-500">Loading...</p>
+        </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "YOUR_WEB_APP_URL"; // PASTE URL HERE
+        const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; 
+
+        async function fetchExpenses() {
+            const response = await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'fetch' }) 
+            });
+            const data = await response.json();
+            const list = document.getElementById('list');
+            list.innerHTML = "";
+            
+            // Skip the first row (headers)
+            data.slice(1).forEach(row => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm">
+                        <span>${row[2]} - $${row[3]}</span>
+                        <button onclick="deleteExpense('${row[0]}')" class="text-red-500 text-xs">Delete</button>
+                    </div>`;
+            });
+        }
 
         async function addExpense() {
             const data = {
@@ -35,8 +56,11 @@
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
             location.reload();
         }
-        
-        // Add delete and fetch logic here (omitted for brevity, will provide if you want full code)
+
+        async function deleteExpense(id) {
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
+            location.reload();
+        }
     </script>
 </body>
 </html>
