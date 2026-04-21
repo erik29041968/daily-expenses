@@ -5,60 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Expenses</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000') no-repeat center center fixed; background-size: cover; }
-    </style>
+    <style>body { background: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000') no-repeat center center fixed; background-size: cover; }</style>
 </head>
-<body class="p-4" onload="fetchExpenses()">
+<body class="p-4" onload="load()">
     <div class="max-w-md mx-auto bg-white/90 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
         <h1 class="text-2xl font-bold text-gray-800 mb-4">Our Expenses</h1>
-        
         <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount">
-        <button onclick="addExpense()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Add Expense</button>
-
-        <div id="list" class="mt-6 space-y-2">
-            <p class="text-center text-gray-500">Loading...</p>
-        </div>
+        <button onclick="add()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Add Expense</button>
+        <div id="list" class="mt-6 space-y-2"></div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec"; 
+        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec"; // <--- PASTE YOUR URL HERE
 
-        async function fetchExpenses() {
-            const response = await fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'fetch' }) 
-            });
-            const data = await response.json();
+        async function load() {
+            const res = await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'fetch' }) });
+            const data = await res.json();
             const list = document.getElementById('list');
             list.innerHTML = "";
-            
-            // Skip the first row (headers)
             data.slice(1).forEach(row => {
                 list.innerHTML += `
                     <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm">
                         <span>${row[2]} - $${row[3]}</span>
-                        <button onclick="deleteExpense('${row[0]}')" class="text-red-500 text-xs">Delete</button>
+                        <button onclick="del('${row[0]}')" class="text-red-500 font-bold">X</button>
                     </div>`;
             });
         }
 
-        async function addExpense() {
-            const data = {
-                action: 'add',
-                id: Date.now().toString(),
-                date: new Date().toLocaleDateString(),
-                description: document.getElementById('desc').value,
-                amount: document.getElementById('amt').value,
-                who: 'Erik'
-            };
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+        async function add() {
+            const data = { action: 'add', id: Date.now().toString(), date: new Date().toLocaleDateString(), description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: 'Erik' };
+            await fetch(URL, { method: 'POST', body: JSON.stringify(data) });
             location.reload();
         }
 
-        async function deleteExpense(id) {
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
+        async function del(id) {
+            await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) });
             location.reload();
         }
     </script>
