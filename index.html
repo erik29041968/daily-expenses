@@ -2,11 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expenses</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ocean background */
+        body { 
+            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000') no-repeat center center fixed; 
+            background-size: cover; 
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
-        <h1 class="text-xl font-bold mb-4">Our Expenses</h1>
+<body class="p-4" onload="load()">
+    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Our Expenses</h1>
         
         <input type="hidden" id="editId">
         <input id="date" type="date" class="w-full p-2 border rounded mb-2">
@@ -18,19 +28,19 @@
         <select id="who" class="w-full p-2 border rounded mb-2">
             <option>Erik</option><option>Nadine</option>
         </select>
-        <button onclick="save()" class="w-full bg-green-600 text-white p-2 rounded">Save Expense</button>
+        <button onclick="save()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Expense</button>
 
         <div id="list" class="mt-6 space-y-2"></div>
     </div>
 
     <script>
-        const URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+        const URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // <--- REMEMBER TO PASTE YOUR URL HERE
 
         async function save() {
-            const id = document.getElementById('editId').value || Date.now().toString();
             const data = {
                 action: document.getElementById('editId').value ? 'edit' : 'add',
-                id: id, date: document.getElementById('date').value,
+                id: document.getElementById('editId').value || Date.now().toString(),
+                date: document.getElementById('date').value,
                 category: document.getElementById('cat').value,
                 description: document.getElementById('desc').value,
                 amount: document.getElementById('amt').value,
@@ -44,12 +54,16 @@
             const res = await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'fetch' }) });
             const data = await res.json();
             const list = document.getElementById('list');
+            list.innerHTML = "";
+            // Reverse to show newest at top
             data.slice(1).reverse().forEach(row => {
                 list.innerHTML += `
-                    <div class="bg-white p-3 border rounded shadow-sm flex justify-between items-center">
+                    <div class="bg-white p-3 rounded shadow flex justify-between items-center">
                         <div><p class="font-bold">${row[3]}</p><p class="text-xs text-gray-500">${row[1]} | ${row[2]} | ${row[5]}</p></div>
-                        <div><p class="font-bold">$${row[4]}</p>
-                        <button onclick="editRow('${row[0]}','${row[1]}','${row[2]}','${row[3]}','${row[4]}','${row[5]}')" class="text-blue-500 text-xs">Edit</button></div>
+                        <div class="text-right">
+                            <p class="font-bold">$${row[4]}</p>
+                            <button onclick="editRow('${row[0]}','${row[1]}','${row[2]}','${row[3]}','${row[4]}','${row[5]}')" class="text-blue-500 text-xs">Edit</button>
+                        </div>
                     </div>`;
             });
         }
