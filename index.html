@@ -4,61 +4,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-blue-50 p-4">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
+<body class="bg-gray-100 p-4">
+    <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
         <h1 class="text-xl font-bold mb-4">Expense Tracker</h1>
-        
-        <input id="date" type="date" class="w-full p-2 border rounded mb-2">
-        <select id="cat" class="w-full p-2 border rounded mb-2">
-            <option>Food & Groceries</option>
-            <option>Restaurants</option>
-            <option>Parking</option>
-            <option>Housing & Utilities</option>
-            <option>Transportation</option>
-            <option>Personal Care & Health</option>
-            <option>Debt Payments</option>
-            <option>Lifestyle & Entertainment</option>
-            <option>Savings & Investments</option>
-            <option>Miscellaneous</option>
-        </select>
-        <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
-        <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
-        <select id="who" class="w-full p-2 border rounded mb-2">
-            <option>Erik</option>
-            <option>Nadine</option>
-        </select>
-        <button onclick="sendData()" class="w-full bg-blue-600 text-white p-3 rounded font-bold">Save Expense</button>
-        <div id="status" class="mt-2 text-sm text-center"></div>
+        <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount">
+        <button onclick="debugSave()" class="w-full bg-blue-600 text-white p-3 rounded">Test Save</button>
     </div>
 
     <script>
-        // 1. PASTE YOUR GOOGLE SCRIPT URL HERE
-        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec";
+        // 1. UPDATE THIS URL
+        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec"; 
 
-        async function sendData() {
-            const status = document.getElementById('status');
-            status.innerText = "Saving...";
-            
-            const data = {
-                action: 'add',
-                id: Date.now().toString(),
-                date: document.getElementById('date').value,
-                category: document.getElementById('cat').value,
-                description: document.getElementById('desc').value,
-                amount: document.getElementById('amt').value,
-                who: document.getElementById('who').value
-            };
+        async function debugSave() {
+            // Check if URL is still the placeholder
+            if (URL.includes("PASTE")) {
+                alert("STOP! You did not update the URL in index.html!");
+                return;
+            }
+
+            alert("Attempting to connect to: " + URL);
 
             try {
                 const response = await fetch(URL, {
                     method: 'POST',
-                    body: JSON.stringify(data)
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: 'add', amount: document.getElementById('amt').value })
                 });
-                status.innerText = "Saved!";
-                location.reload();
+                alert("Request sent! Check your Google Sheet.");
             } catch (error) {
-                status.innerText = "Error: Could not connect to Google.";
-                console.error(error);
+                alert("Error happened: " + error.message);
             }
         }
     </script>
