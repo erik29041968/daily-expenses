@@ -3,12 +3,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920') no-repeat center center fixed; background-size: cover; min-height: 100vh; }
-    </style>
+    <style>body { background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920') no-repeat center center fixed; background-size: cover; min-height: 100vh; }</style>
 </head>
 <body class="p-4" onload="load()">
-    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-xl shadow-lg backdrop-blur-sm">
+    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-xl shadow-lg">
         <h1 class="text-xl font-bold mb-4">Expense Tracker</h1>
         
         <div class="bg-gray-800 text-white p-4 rounded-lg mb-6">
@@ -20,10 +18,16 @@
         <input type="hidden" id="editId">
         <input id="date" type="date" class="w-full p-2 border rounded mb-2">
         <select id="cat" class="w-full p-2 border rounded mb-2">
-            <option>Housing & Utilities</option><option>Food & Groceries</option>
-            <option>Transportation</option><option>Personal Care & Health</option>
-            <option>Debt Payments</option><option>Lifestyle & Entertainment</option>
-            <option>Savings & Investments</option><option>Miscellaneous</option>
+            <option>Food & Groceries</option>
+            <option>Restaurants</option>
+            <option>Parking</option>
+            <option>Housing & Utilities</option>
+            <option>Transportation</option>
+            <option>Personal Care & Health</option>
+            <option>Debt Payments</option>
+            <option>Lifestyle & Entertainment</option>
+            <option>Savings & Investments</option>
+            <option>Miscellaneous</option>
         </select>
         <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
@@ -34,8 +38,9 @@
     </div>
 
     <script>
-        // PASTE YOUR URL HERE. MUST END IN /exec
-        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec"; 
+        // REPLACE THIS LINE WITH YOUR REAL URL
+        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec; 
+        console.log("Current URL being used:", URL);
 
         async function save() {
             const data = { action: 'add', id: Date.now().toString(), date: document.getElementById('date').value, category: document.getElementById('cat').value, description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: document.getElementById('who').value };
@@ -59,7 +64,10 @@
                 data.slice(1).reverse().forEach(r => {
                     list.innerHTML += `<div class="bg-white p-2 rounded shadow flex justify-between"><div><p class="font-bold">${r[3]}</p><p class="text-xs text-gray-500">${r[2]}</p></div><p class="font-bold">$${r[4]} (${r[5]})</p></div>`;
                 });
-            } catch(e) { document.getElementById('list').innerHTML = "Cannot connect to Sheet. Check Deployment Access!"; }
+            } catch(e) { 
+                console.error("DEBUG ERROR:", e);
+                document.getElementById('list').innerHTML = "ERROR: Cannot connect to URL. Check Console."; 
+            }
         }
     </script>
 </body>
