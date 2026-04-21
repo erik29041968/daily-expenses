@@ -1,21 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body { background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920') no-repeat center center fixed; background-size: cover; min-height: 100vh; }</style>
 </head>
-<body class="p-4" onload="load()">
-    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-xl shadow-lg">
+<body class="bg-blue-50 p-4">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
         <h1 class="text-xl font-bold mb-4">Expense Tracker</h1>
         
-        <div class="bg-gray-800 text-white p-4 rounded-lg mb-6">
-            <div class="flex justify-between"><span>Erik Paid:</span> <span id="eSum">$0</span></div>
-            <div class="flex justify-between"><span>Nadine Paid:</span> <span id="nSum">$0</span></div>
-            <div id="settlement" class="mt-2 pt-2 border-t font-bold text-yellow-400">Loading...</div>
-        </div>
-
-        <input type="hidden" id="editId">
         <input id="date" type="date" class="w-full p-2 border rounded mb-2">
         <select id="cat" class="w-full p-2 border rounded mb-2">
             <option>Food & Groceries</option>
@@ -31,42 +23,42 @@
         </select>
         <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
-        <select id="who" class="w-full p-2 border rounded mb-2"><option>Erik</option><option>Nadine</option></select>
-        <button onclick="save()" class="w-full bg-blue-600 text-white p-4 rounded font-bold">Save Expense</button>
-
-        <div id="list" class="mt-6 space-y-2"></div>
+        <select id="who" class="w-full p-2 border rounded mb-2">
+            <option>Erik</option>
+            <option>Nadine</option>
+        </select>
+        <button onclick="sendData()" class="w-full bg-blue-600 text-white p-3 rounded font-bold">Save Expense</button>
+        <div id="status" class="mt-2 text-sm text-center"></div>
     </div>
 
     <script>
-        // REPLACE THIS LINE WITH YOUR REAL URL
-        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec; 
-        console.log("Current URL being used:", URL);
+        // 1. PASTE YOUR GOOGLE SCRIPT URL HERE
+        const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec";
 
-        async function save() {
-            const data = { action: 'add', id: Date.now().toString(), date: document.getElementById('date').value, category: document.getElementById('cat').value, description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: document.getElementById('who').value };
-            await fetch(URL, { method: 'POST', body: JSON.stringify(data), mode: 'no-cors' });
-            location.reload();
-        }
+        async function sendData() {
+            const status = document.getElementById('status');
+            status.innerText = "Saving...";
+            
+            const data = {
+                action: 'add',
+                id: Date.now().toString(),
+                date: document.getElementById('date').value,
+                category: document.getElementById('cat').value,
+                description: document.getElementById('desc').value,
+                amount: document.getElementById('amt').value,
+                who: document.getElementById('who').value
+            };
 
-        async function load() {
             try {
-                const res = await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'fetch' }) });
-                const data = await res.json();
-                let e = 0, n = 0;
-                data.slice(1).forEach(r => { if(r[5] === 'Erik') e += parseFloat(r[4] || 0); else n += parseFloat(r[4] || 0); });
-                document.getElementById('eSum').innerText = '$' + e.toFixed(2);
-                document.getElementById('nSum').innerText = '$' + n.toFixed(2);
-                let diff = (e - n) / 2;
-                document.getElementById('settlement').innerText = diff > 0 ? `Nadine owes Erik: $${diff.toFixed(2)}` : (diff < 0 ? `Erik owes Nadine: $${Math.abs(diff).toFixed(2)}` : "Settled up!");
-                
-                const list = document.getElementById('list');
-                list.innerHTML = "";
-                data.slice(1).reverse().forEach(r => {
-                    list.innerHTML += `<div class="bg-white p-2 rounded shadow flex justify-between"><div><p class="font-bold">${r[3]}</p><p class="text-xs text-gray-500">${r[2]}</p></div><p class="font-bold">$${r[4]} (${r[5]})</p></div>`;
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
                 });
-            } catch(e) { 
-                console.error("DEBUG ERROR:", e);
-                document.getElementById('list').innerHTML = "ERROR: Cannot connect to URL. Check Console."; 
+                status.innerText = "Saved!";
+                location.reload();
+            } catch (error) {
+                status.innerText = "Error: Could not connect to Google.";
+                console.error(error);
             }
         }
     </script>
