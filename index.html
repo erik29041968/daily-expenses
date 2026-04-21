@@ -7,7 +7,6 @@
 <body class="bg-gray-100 p-4">
     <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
         <h1 class="text-xl font-bold mb-4">Expense Tracker</h1>
-        
         <input id="date" type="date" class="w-full p-2 border rounded mb-2">
         <select id="cat" class="w-full p-2 border rounded mb-2">
             <option>Food & Groceries</option><option>Restaurants</option><option>Parking</option>
@@ -18,11 +17,9 @@
         </select>
         <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
-        <select id="who" class="w-full p-2 border rounded mb-2">
-            <option>Erik</option><option>Nadine</option>
-        </select>
+        <select id="who" class="w-full p-2 border rounded mb-2"><option>Erik</option><option>Nadine</option></select>
         <button onclick="save()" class="w-full bg-blue-600 text-white p-3 rounded font-bold">Save Expense</button>
-        <div id="msg" class="mt-2 text-center text-sm"></div>
+        <div id="msg" class="mt-2 text-center text-sm font-bold"></div>
     </div>
 
     <script>
@@ -30,15 +27,7 @@
 
         async function save() {
             document.getElementById('msg').innerText = "Connecting...";
-            const data = { 
-                action: 'add', 
-                id: Date.now().toString(), 
-                date: document.getElementById('date').value, 
-                category: document.getElementById('cat').value, 
-                description: document.getElementById('desc').value, 
-                amount: document.getElementById('amt').value, 
-                who: document.getElementById('who').value 
-            };
+            const data = { action: 'add', id: Date.now().toString(), date: document.getElementById('date').value, category: document.getElementById('cat').value, description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: document.getElementById('who').value };
             
             try {
                 const res = await fetch(URL, { 
@@ -46,8 +35,8 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data) 
                 });
-                document.getElementById('msg').innerText = "Saved!";
-                location.reload();
+                document.getElementById('msg').innerText = "Success! Saved to Sheet.";
+                setTimeout(() => location.reload(), 1000);
             } catch (err) {
                 document.getElementById('msg').innerText = "Connection Failed. Check Console.";
                 console.error(err);
