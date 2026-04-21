@@ -3,10 +3,18 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920') no-repeat center center fixed; background-size: cover; min-height: 100vh; }</style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
+<body class="p-4" onload="load()">
+    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-xl shadow-lg backdrop-blur-sm">
         <h1 class="text-xl font-bold mb-4">Expense Tracker</h1>
+        
+        <div class="bg-gray-800 text-white p-4 rounded-lg mb-6">
+            <div class="flex justify-between"><span>Erik Paid:</span> <span id="eSum">$0</span></div>
+            <div class="flex justify-between"><span>Nadine Paid:</span> <span id="nSum">$0</span></div>
+            <div id="settlement" class="mt-2 pt-2 border-t border-gray-600 font-bold text-yellow-400 text-center">Loading...</div>
+        </div>
+
         <input id="date" type="date" class="w-full p-2 border rounded mb-2">
         <select id="cat" class="w-full p-2 border rounded mb-2">
             <option>Food & Groceries</option><option>Restaurants</option><option>Parking</option>
@@ -19,28 +27,40 @@
         <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
         <select id="who" class="w-full p-2 border rounded mb-2"><option>Erik</option><option>Nadine</option></select>
         <button onclick="save()" class="w-full bg-blue-600 text-white p-3 rounded font-bold">Save Expense</button>
-        <div id="msg" class="mt-2 text-center text-sm font-bold"></div>
+        <div id="msg" class="mt-2 text-center font-bold"></div>
+
+        <div id="list" class="mt-6 space-y-2"></div>
     </div>
 
     <script>
         const URL = "https://script.google.com/macros/s/AKfycbxCc8PolPHdzPz3wXjxiFc2Gckp9pnFzIBez4NMJape-ZDPZFp_urzkhEaj3DOXkHZP/exec";
 
         async function save() {
-            document.getElementById('msg').innerText = "Connecting...";
+            document.getElementById('msg').innerText = "Saving...";
             const data = { action: 'add', id: Date.now().toString(), date: document.getElementById('date').value, category: document.getElementById('cat').value, description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: document.getElementById('who').value };
-            
             try {
-                const res = await fetch(URL, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data) 
+                await fetch(URL, { method: 'POST', body: JSON.stringify(data) });
+                location.reload();
+            } catch(e) { document.getElementById('msg').innerText = "Connection Failed."; }
+        }
+
+        async function load() {
+            try {
+                const res = await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'fetch' }) });
+                const data = await res.json();
+                let e = 0, n = 0;
+                data.slice(1).forEach(r => { if(r[5] === 'Erik') e += parseFloat(r[4]||0); else n += parseFloat(r[4]||0); });
+                document.getElementById('eSum').innerText = '$' + e.toFixed(2);
+                document.getElementById('nSum').innerText = '$' + n.toFixed(2);
+                let diff = (e - n) / 2;
+                document.getElementById('settlement').innerText = diff > 0 ? `Nadine owes Erik: $${diff.toFixed(2)}` : (diff < 0 ? `Erik owes Nadine: $${Math.abs(diff).toFixed(2)}` : "Settled up!");
+                
+                const list = document.getElementById('list');
+                list.innerHTML = "";
+                data.slice(1).reverse().forEach(r => {
+                    list.innerHTML += `<div class="bg-white p-2 rounded shadow text-sm flex justify-between"><div><p class="font-bold">${r[3]}</p><p class="text-xs text-gray-500">${r[2]}</p></div><p class="font-bold">$${r[4]} (${r[5]})</p></div>`;
                 });
-                document.getElementById('msg').innerText = "Success! Saved to Sheet.";
-                setTimeout(() => location.reload(), 1000);
-            } catch (err) {
-                document.getElementById('msg').innerText = "Connection Failed. Check Console.";
-                console.error(err);
-            }
+            } catch(e) { document.getElementById('msg').innerText = "Cannot connect to Sheet."; }
         }
     </script>
 </body>
