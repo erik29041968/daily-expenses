@@ -8,17 +8,21 @@
         body { 
             font-family: sans-serif; 
             margin: 0; padding: 20px; 
-            /* Bright Ocean Blue */
-            background: linear-gradient(135deg, #0077be, #4facfe);
+            /* Wild Ocean Background */
+            background: url('https://images.unsplash.com/photo-1505144808409-192770258160') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             color: #333;
         }
         .container { 
-            max-width: 500px; margin: 0 auto; background: white; 
-            padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 500px; margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.9); 
+            padding: 2rem; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
         h2 { text-align: center; color: #004a6e; font-size: 1.8rem; }
-        label { font-weight: bold; display: block; margin-top: 10px; font-size: 1.1rem; }
+        label { font-weight: bold; display: block; margin-top: 15px; font-size: 1.1rem; }
         input, select, button { 
             width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; 
             border-radius: 10px; box-sizing: border-box; font-size: 1.1rem; 
@@ -26,20 +30,19 @@
         button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background-color: #005f99; }
         
-        /* 3-Column Stats Style */
-        .stats-grid { display: flex; gap: 10px; margin-top: 20px; }
+        .stats-grid { display: flex; gap: 10px; margin-top: 25px; }
         .stat-box { 
             flex: 1; padding: 10px; border-radius: 10px; 
             text-align: center; font-size: 0.9rem; font-weight: bold;
             background: #eef; border: 1px solid #ccc;
         }
-        .stat-val { display: block; font-size: 1.2rem; color: #004a6e; }
+        .stat-val { display: block; font-size: 1.1rem; color: #004a6e; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🌊 Expense Tracker</h2>
+    <h2>🌊 Wild Ocean Expenses</h2>
     
     <form id="expenseForm">
         <label>Date</label>
@@ -96,7 +99,6 @@
             description: "N/A"
         };
 
-        // Update UI Totals
         if (paidBy === 'Erik') erikT += amount;
         else nadineT += amount;
         
@@ -113,7 +115,7 @@
                 body: JSON.stringify(formData)
             });
             form.reset();
-            alert("Saved!");
+            alert("Expense Saved!");
         } catch (error) {
             alert("Error saving.");
         }
