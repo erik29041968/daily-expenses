@@ -3,30 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker - Ocean View</title>
+    <title>Daily Expenses</title>
     <style>
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: sans-serif; 
             margin: 0; padding: 20px; 
-            /* Ocean Gradient Background */
-            background: linear-gradient(to bottom, #006994, #e0f7fa);
+            /* Bright Ocean Blue */
+            background: linear-gradient(135deg, #0077be, #4facfe);
             min-height: 100vh;
             color: #333;
         }
         .container { 
-            max-width: 450px; margin: 0 auto; background: rgba(255, 255, 255, 0.9); 
-            padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-width: 500px; margin: 0 auto; background: white; 
+            padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        h2 { text-align: center; color: #004a6e; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { background-color: #0077be; color: white; border: none; cursor: pointer; font-weight: bold; }
+        h2 { text-align: center; color: #004a6e; font-size: 1.8rem; }
+        label { font-weight: bold; display: block; margin-top: 10px; font-size: 1.1rem; }
+        input, select, button { 
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; 
+            border-radius: 10px; box-sizing: border-box; font-size: 1.1rem; 
+        }
+        button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background-color: #005f99; }
         
-        #totalDisplay { 
-            text-align: center; font-size: 1.5rem; font-weight: bold; 
-            margin: 20px 0; padding: 15px; background: #e0f7fa; border-radius: 8px; 
-            color: #004a6e;
+        /* 3-Column Stats Style */
+        .stats-grid { display: flex; gap: 10px; margin-top: 20px; }
+        .stat-box { 
+            flex: 1; padding: 10px; border-radius: 10px; 
+            text-align: center; font-size: 0.9rem; font-weight: bold;
+            background: #eef; border: 1px solid #ccc;
         }
+        .stat-val { display: block; font-size: 1.2rem; color: #004a6e; }
     </style>
 </head>
 <body>
@@ -34,39 +41,68 @@
 <div class="container">
     <h2>🌊 Expense Tracker</h2>
     
-    <div id="totalDisplay">Total: $0.00</div>
-
     <form id="expenseForm">
+        <label>Date</label>
         <input type="date" id="date" required>
-        <input type="text" id="paidBy" placeholder="Who paid? (e.g., Erik/Nadine)" required>
-        <input type="number" id="amount" placeholder="Amount ($)" step="0.01" required>
+        
+        <label>Who Paid?</label>
+        <select id="paidBy">
+            <option value="Erik">Erik</option>
+            <option value="Nadine">Nadine</option>
+        </select>
+        
+        <label>Amount ($)</label>
+        <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+        
+        <label>Category</label>
         <select id="category">
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Utilities">Utilities</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Restaurant">Restaurant</option>
+            <option value="Fuel">Fuel</option>
+            <option value="Gifts">Gifts</option>
             <option value="Other">Other</option>
         </select>
-        <input type="text" id="description" placeholder="Description">
-        <button type="submit" id="submitBtn">Add Expense</button>
+        
+        <button type="submit" id="submitBtn">Save Expense</button>
     </form>
+
+    <div class="stats-grid">
+        <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Nadine<span id="nadineTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Balance<span id="balance" class="stat-val">$0.00</span></div>
+    </div>
 </div>
 
 <script>
     const form = document.getElementById('expenseForm');
-    const totalDisplay = document.getElementById('totalDisplay');
-    let runningTotal = 0;
+    const erikEl = document.getElementById('erikTotal');
+    const nadineEl = document.getElementById('nadineTotal');
+    const balanceEl = document.getElementById('balance');
+    
+    let erikT = 0;
+    let nadineT = 0;
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const paidBy = document.getElementById('paidBy').value;
         const amount = parseFloat(document.getElementById('amount').value);
+        
         const formData = {
             date: document.getElementById('date').value,
-            paidBy: document.getElementById('paidBy').value,
+            paidBy: paidBy,
             amount: amount,
             category: document.getElementById('category').value,
-            description: document.getElementById('description').value
+            description: "N/A"
         };
+
+        // Update UI Totals
+        if (paidBy === 'Erik') erikT += amount;
+        else nadineT += amount;
+        
+        erikEl.textContent = `$${erikT.toFixed(2)}`;
+        nadineEl.textContent = `$${nadineT.toFixed(2)}`;
+        balanceEl.textContent = `$${Math.abs(erikT - nadineT).toFixed(2)}`;
 
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0biSBZXRTbU8heHP4--Gd8ngnlCc9oTeFm51iVzltyjBQmNDeEJELguz0-28zZO5j/exec';
 
@@ -76,15 +112,10 @@
                 mode: 'no-cors',
                 body: JSON.stringify(formData)
             });
-
-            // Update local total
-            runningTotal += amount;
-            totalDisplay.textContent = `Total: $${runningTotal.toFixed(2)}`;
-            
             form.reset();
-            alert("Expense Saved!");
+            alert("Saved!");
         } catch (error) {
-            alert("Error saving data.");
+            alert("Error saving.");
         }
     });
 </script>
