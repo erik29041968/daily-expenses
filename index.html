@@ -3,55 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Daily Expenses Tracker</title>
     <style>
-        body { 
-            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920') no-repeat center center fixed; 
-            background-size: cover; 
-            min-height: 100vh; 
-        }
+        body { font-family: sans-serif; max-width: 400px; margin: 2rem auto; padding: 0 1rem; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
-<body class="p-4" onload="load()">
-    <div class="max-w-md mx-auto bg-white/90 p-6 rounded-xl shadow-lg backdrop-blur-sm">
-        <h1 class="text-xl font-bold mb-4 text-gray-800">Expense Tracker</h1>
-        
-        <div class="bg-gray-800 text-white p-4 rounded-lg mb-6 shadow-inner">
-            <div class="flex justify-between"><span>Erik Paid:</span> <span id="eSum">$0</span></div>
-            <div class="flex justify-between"><span>Nadine Paid:</span> <span id="nSum">$0</span></div>
-            <div id="settlement" class="mt-2 pt-2 border-t border-gray-600 font-bold text-yellow-400 text-center">...</div>
-        </div>
+<body>
 
-        <input id="date" type="date" class="w-full p-2 border rounded mb-2">
-        <select id="cat" class="w-full p-2 border rounded mb-2">
-            <option>Food & Groceries</option><option>Restaurants</option><option>Parking</option>
-            <option>Housing & Utilities</option><option>Transportation</option>
+    <h2>Add Expense</h2>
+    <form id="expenseForm">
+        <input type="date" id="date" required>
+        <select id="category">
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Other">Other</option>
         </select>
-        <input id="desc" class="w-full p-2 border rounded mb-2" placeholder="Description">
-        <input id="amt" type="number" class="w-full p-2 border rounded mb-2" placeholder="Amount ($)">
-        <select id="who" class="w-full p-2 border rounded mb-2"><option>Erik</option><option>Nadine</option></select>
-        
-        <button onclick="save()" class="w-full bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700">Save Expense</button>
-        <div id="msg" class="mt-2 text-center text-sm font-bold text-red-600"></div>
-    </div>
+        <input type="number" id="amount" placeholder="Amount" required>
+        <input type="text" id="description" placeholder="Description (Optional)">
+        <button type="submit" id="submitBtn">Save Expense</button>
+    </form>
+
+    <div id="status"></div>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbymi5ECXyzl79SnVk3UFSqyyxVWDYrOxacCuVxl6DehVFaMPspz4J2xCsbWm4tk3ydw/exec";
+        const form = document.getElementById('expenseForm');
+        const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('submitBtn');
 
-        async function save() {
-            document.getElementById('msg').innerText = "Saving...";
-            const data = { action: 'add', id: Date.now().toString(), date: document.getElementById('date').value, category: document.getElementById('cat').value, description: document.getElementById('desc').value, amount: document.getElementById('amt').value, who: document.getElementById('who').value };
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            statusDiv.textContent = "Saving...";
+
+            const formData = {
+                date: document.getElementById('date').value,
+                category: document.getElementById('category').value,
+                amount: document.getElementById('amount').value,
+                description: document.getElementById('description').value
+            };
+
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0biSBZXRTbU8heHP4--Gd8ngnlCc9oTeFm51iVzltyjBQmNDeEJELguz0-28zZO5j/exec';
+
             try {
-                await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-                location.reload();
-            } catch(e) { document.getElementById('msg').innerText = "Connection Failed."; }
-        }
-
-        async function load() {
-            // We use no-cors here to avoid browser blocking.
-            // Note: This won't return data, but it will check if the endpoint exists.
-            console.log("Page loaded.");
-        }
+                // We use no-cors because browser security prevents simple cross-origin requests
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(formData)
+                });
+                
+                statusDiv.textContent = "Expense saved successfully!";
+                form.reset();
+            } catch (error) {
+                statusDiv.textContent = "Error saving. Please check your connection.";
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
