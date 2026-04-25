@@ -6,110 +6,89 @@
     <title>Daily Expenses</title>
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; padding: 20px; 
-            background: url('https://images.unsplash.com/photo-1505144808409-192770258160') no-repeat center center fixed;
-            background-size: cover;
+            background: #f4f7f6; /* Rustige, professionele achtergrond */
             min-height: 100vh;
             color: #333;
         }
         .container { 
-            max-width: 500px; margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.9); 
-            padding: 2rem; border-radius: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
+            max-width: 600px; margin: 0 auto; 
+            background: #ffffff; 
+            padding: 2rem; border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        h2 { text-align: center; color: #004a6e; font-size: 1.8rem; }
-        label { font-weight: bold; display: block; margin-top: 15px; font-size: 1.1rem; }
-        input, select, button { 
-            width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; 
-            border-radius: 10px; box-sizing: border-box; font-size: 1rem; 
-        }
-        button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:hover { background-color: #005f99; }
+        h2 { text-align: center; color: #004a6e; margin-bottom: 20px; }
         
-        /* Lijst stijlen */
-        #expenseList { margin-top: 20px; border-top: 2px solid #ccc; padding-top: 10px; }
-        .expense-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
-        .edit-btn { background: #f39c12; width: auto; padding: 5px 10px; font-size: 0.8rem; }
+        /* Stats Styling */
+        .stats-grid { display: flex; gap: 10px; margin-bottom: 25px; }
+        .stat-box { flex: 1; padding: 15px; border-radius: 10px; text-align: center; background: #eef7fa; border: 1px solid #d1e7ef; }
+        .stat-val { display: block; font-size: 1.2rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
+
+        /* Form Styling */
+        label { font-weight: 600; display: block; margin-top: 15px; font-size: 0.9rem; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
+        .edit-btn { background: #f39c12; padding: 5px 10px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🌊 Wild Ocean Expenses</h2>
+    <h2>Daily Expenses</h2>
+    
+    <div class="stats-grid">
+        <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Nadine<span id="nadineTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Balance<span id="balance" class="stat-val">$0.00</span></div>
+    </div>
     
     <form id="expenseForm">
-        <input type="hidden" id="editIndex" value=""> <label>Date</label>
-        <input type="date" id="date" required>
-        
+        <input type="hidden" id="editIndex" value="">
+        <label>Date</label> <input type="date" id="date" required>
         <label>Who Paid?</label>
-        <select id="paidBy">
-            <option value="Erik">Erik</option>
-            <option value="Nadine">Nadine</option>
-        </select>
-        
-        <label>Amount ($)</label>
-        <input type="number" id="amount" step="0.01" placeholder="0.00" required>
-        
+        <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
+        <label>Amount ($)</label> <input type="number" id="amount" step="0.01" required>
         <label>Category</label>
         <select id="category">
-            <option value="Groceries">Groceries</option>
-            <option value="Restaurant">Restaurant</option>
-            <option value="Fuel">Fuel</option>
-            <option value="Gifts">Gifts</option>
-            <option value="Other">Other</option>
+            <option value="Groceries">Groceries</option><option value="Restaurant">Restaurant</option>
+            <option value="Fuel">Fuel</option><option value="Gifts">Gifts</option>
         </select>
-        
         <button type="submit" id="submitBtn">Save Expense</button>
-        <button type="button" id="cancelBtn" style="display:none; background:#999;" onclick="resetForm()">Cancel Edit</button>
+        <button type="button" id="cancelBtn" style="display:none; background:#999;" onclick="resetForm()">Cancel</button>
     </form>
 
-    <div id="expenseList">
-        <h3>Recent Expenses</h3>
-        <div id="listContainer"></div>
-    </div>
+    <table>
+        <thead><tr><th>Date</th><th>Who</th><th>$</th><th>Action</th></tr></thead>
+        <tbody id="expenseTableBody">
+            </tbody>
+    </table>
 </div>
 
 <script>
-    const form = document.getElementById('expenseForm');
-    const listContainer = document.getElementById('listContainer');
-    const editIndexInput = document.getElementById('editIndex');
-    const submitBtn = document.getElementById('submitBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
+    // Voorbeeld data: Zodra je je data ophaalt uit Google Sheets, zet je die in deze array
+    let expenses = [
+        { date: '2026-04-25', paidBy: 'Erik', amount: 50.00, category: 'Groceries' }
+    ];
 
-    // Voorbeeld data (in echte app moet je dit ophalen via fetch('URL'))
-    let expenses = []; 
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const isEditing = editIndexInput.value !== "";
-        const formData = {
-            action: isEditing ? 'update' : 'add',
-            index: editIndexInput.value, // Welke rij in sheet?
-            date: document.getElementById('date').value,
-            paidBy: document.getElementById('paidBy').value,
-            amount: parseFloat(document.getElementById('amount').value),
-            category: document.getElementById('category').value
-        };
-
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0biSBZXRTbU8heHP4--Gd8ngnlCc9oTeFm51iVzltyjBQmNDeEJELguz0-28zZO5j/exec';
-
-        try {
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(formData)
-            });
-            alert(isEditing ? "Expense Updated!" : "Expense Saved!");
-            resetForm();
-            // Hier zou je de lijst opnieuw moeten ophalen
-        } catch (error) {
-            alert("Error saving.");
-        }
-    });
+    function renderTable() {
+        const tbody = document.getElementById('expenseTableBody');
+        tbody.innerHTML = ''; // Leeg maken
+        expenses.forEach((item, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td>${item.paidBy}</td>
+                    <td>$${item.amount.toFixed(2)}</td>
+                    <td><button class="edit-btn" onclick="editExpense(${index})">Edit</button></td>
+                </tr>
+            `;
+        });
+    }
 
     function editExpense(index) {
         const item = expenses[index];
@@ -117,18 +96,21 @@
         document.getElementById('paidBy').value = item.paidBy;
         document.getElementById('amount').value = item.amount;
         document.getElementById('category').value = item.category;
-        
-        editIndexInput.value = index;
-        submitBtn.textContent = "Update Expense";
-        cancelBtn.style.display = "block";
+        document.getElementById('editIndex').value = index;
+        document.getElementById('submitBtn').textContent = "Update Expense";
+        document.getElementById('cancelBtn').style.display = "block";
     }
 
     function resetForm() {
-        form.reset();
-        editIndexInput.value = "";
-        submitBtn.textContent = "Save Expense";
-        cancelBtn.style.display = "none";
+        document.getElementById('expenseForm').reset();
+        document.getElementById('editIndex').value = "";
+        document.getElementById('submitBtn').textContent = "Save Expense";
+        document.getElementById('cancelBtn').style.display = "none";
     }
+
+    // Initial render
+    renderTable();
 </script>
 </body>
 </html>
+
