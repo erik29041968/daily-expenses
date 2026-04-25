@@ -8,38 +8,49 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; padding: 20px; 
-            background: #f4f7f6; /* Rustige, professionele achtergrond */
+            /* De Oceaan achtergrond met een witte laag eroverheen voor leesbaarheid */
+            background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), 
+                        url('https://images.unsplash.com/photo-1505144808409-192770258160');
+            background-size: cover;
+            background-attachment: fixed;
             min-height: 100vh;
             color: #333;
         }
         .container { 
             max-width: 600px; margin: 0 auto; 
-            background: #ffffff; 
-            padding: 2rem; border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95); /* Semi-transparant wit */
+            padding: 2.5rem; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
-        h2 { text-align: center; color: #004a6e; margin-bottom: 20px; }
+        h2 { text-align: center; color: #004a6e; margin-bottom: 25px; }
         
         /* Stats Styling */
-        .stats-grid { display: flex; gap: 10px; margin-bottom: 25px; }
-        .stat-box { flex: 1; padding: 15px; border-radius: 10px; text-align: center; background: #eef7fa; border: 1px solid #d1e7ef; }
-        .stat-val { display: block; font-size: 1.2rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
+        .stats-grid { display: flex; gap: 15px; margin-bottom: 30px; }
+        .stat-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; background: #f0f7fa; border: 1px solid #d1e7ef; }
+        .stat-val { display: block; font-size: 1.3rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
 
-        /* Form Styling */
-        label { font-weight: 600; display: block; margin-top: 15px; font-size: 0.9rem; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
+        /* Grotere Input Velden */
+        label { font-weight: 600; display: block; margin-top: 20px; font-size: 1rem; color: #444; }
+        input, select { 
+            width: 100%; padding: 18px; margin-top: 8px; border: 2px solid #ddd; 
+            border-radius: 12px; box-sizing: border-box; font-size: 1.1rem;
+        }
+        button { 
+            width: 100%; padding: 18px; margin-top: 20px; background-color: #0077be; 
+            color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 12px; font-size: 1.1rem;
+        }
+        button:hover { background-color: #005f99; }
         
         /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
-        .edit-btn { background: #f39c12; padding: 5px 10px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        .edit-btn { background: #f39c12; padding: 8px 15px; font-size: 0.9rem; border-radius: 6px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Daily Expenses</h2>
+    <h2>🌊 Wild Ocean Expenses</h2>
     
     <div class="stats-grid">
         <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
@@ -70,14 +81,14 @@
 </div>
 
 <script>
-    // Voorbeeld data: Zodra je je data ophaalt uit Google Sheets, zet je die in deze array
+    // Voorbeeld data array
     let expenses = [
         { date: '2026-04-25', paidBy: 'Erik', amount: 50.00, category: 'Groceries' }
     ];
 
     function renderTable() {
         const tbody = document.getElementById('expenseTableBody');
-        tbody.innerHTML = ''; // Leeg maken
+        tbody.innerHTML = '';
         expenses.forEach((item, index) => {
             tbody.innerHTML += `
                 <tr>
@@ -108,9 +119,7 @@
         document.getElementById('cancelBtn').style.display = "none";
     }
 
-    // Initial render
     renderTable();
 </script>
 </body>
 </html>
-
