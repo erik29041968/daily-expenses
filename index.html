@@ -8,7 +8,6 @@
         body { 
             font-family: sans-serif; 
             margin: 0; padding: 20px; 
-            /* Wild Ocean Background */
             background: url('https://images.unsplash.com/photo-1505144808409-192770258160') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -24,19 +23,16 @@
         h2 { text-align: center; color: #004a6e; font-size: 1.8rem; }
         label { font-weight: bold; display: block; margin-top: 15px; font-size: 1.1rem; }
         input, select, button { 
-            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; 
-            border-radius: 10px; box-sizing: border-box; font-size: 1.1rem; 
+            width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; 
+            border-radius: 10px; box-sizing: border-box; font-size: 1rem; 
         }
         button { background-color: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background-color: #005f99; }
         
-        .stats-grid { display: flex; gap: 10px; margin-top: 25px; }
-        .stat-box { 
-            flex: 1; padding: 10px; border-radius: 10px; 
-            text-align: center; font-size: 0.9rem; font-weight: bold;
-            background: #eef; border: 1px solid #ccc;
-        }
-        .stat-val { display: block; font-size: 1.1rem; color: #004a6e; margin-top: 5px; }
+        /* Lijst stijlen */
+        #expenseList { margin-top: 20px; border-top: 2px solid #ccc; padding-top: 10px; }
+        .expense-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .edit-btn { background: #f39c12; width: auto; padding: 5px 10px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -45,7 +41,7 @@
     <h2>🌊 Wild Ocean Expenses</h2>
     
     <form id="expenseForm">
-        <label>Date</label>
+        <input type="hidden" id="editIndex" value=""> <label>Date</label>
         <input type="date" id="date" required>
         
         <label>Who Paid?</label>
@@ -67,44 +63,37 @@
         </select>
         
         <button type="submit" id="submitBtn">Save Expense</button>
+        <button type="button" id="cancelBtn" style="display:none; background:#999;" onclick="resetForm()">Cancel Edit</button>
     </form>
 
-    <div class="stats-grid">
-        <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
-        <div class="stat-box">Nadine<span id="nadineTotal" class="stat-val">$0.00</span></div>
-        <div class="stat-box">Balance<span id="balance" class="stat-val">$0.00</span></div>
+    <div id="expenseList">
+        <h3>Recent Expenses</h3>
+        <div id="listContainer"></div>
     </div>
 </div>
 
 <script>
     const form = document.getElementById('expenseForm');
-    const erikEl = document.getElementById('erikTotal');
-    const nadineEl = document.getElementById('nadineTotal');
-    const balanceEl = document.getElementById('balance');
-    
-    let erikT = 0;
-    let nadineT = 0;
+    const listContainer = document.getElementById('listContainer');
+    const editIndexInput = document.getElementById('editIndex');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // Voorbeeld data (in echte app moet je dit ophalen via fetch('URL'))
+    let expenses = []; 
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const paidBy = document.getElementById('paidBy').value;
-        const amount = parseFloat(document.getElementById('amount').value);
-        
+        const isEditing = editIndexInput.value !== "";
         const formData = {
+            action: isEditing ? 'update' : 'add',
+            index: editIndexInput.value, // Welke rij in sheet?
             date: document.getElementById('date').value,
-            paidBy: paidBy,
-            amount: amount,
-            category: document.getElementById('category').value,
-            description: "N/A"
+            paidBy: document.getElementById('paidBy').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            category: document.getElementById('category').value
         };
-
-        if (paidBy === 'Erik') erikT += amount;
-        else nadineT += amount;
-        
-        erikEl.textContent = `$${erikT.toFixed(2)}`;
-        nadineEl.textContent = `$${nadineT.toFixed(2)}`;
-        balanceEl.textContent = `$${Math.abs(erikT - nadineT).toFixed(2)}`;
 
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0biSBZXRTbU8heHP4--Gd8ngnlCc9oTeFm51iVzltyjBQmNDeEJELguz0-28zZO5j/exec';
 
@@ -114,12 +103,32 @@
                 mode: 'no-cors',
                 body: JSON.stringify(formData)
             });
-            form.reset();
-            alert("Expense Saved!");
+            alert(isEditing ? "Expense Updated!" : "Expense Saved!");
+            resetForm();
+            // Hier zou je de lijst opnieuw moeten ophalen
         } catch (error) {
             alert("Error saving.");
         }
     });
+
+    function editExpense(index) {
+        const item = expenses[index];
+        document.getElementById('date').value = item.date;
+        document.getElementById('paidBy').value = item.paidBy;
+        document.getElementById('amount').value = item.amount;
+        document.getElementById('category').value = item.category;
+        
+        editIndexInput.value = index;
+        submitBtn.textContent = "Update Expense";
+        cancelBtn.style.display = "block";
+    }
+
+    function resetForm() {
+        form.reset();
+        editIndexInput.value = "";
+        submitBtn.textContent = "Save Expense";
+        cancelBtn.style.display = "none";
+    }
 </script>
 </body>
 </html>
