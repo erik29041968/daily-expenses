@@ -6,39 +6,128 @@
     <title>Daily Expenses</title>
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; padding: 20px; 
             background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), 
                         url('https://images.unsplash.com/photo-1505144808409-192770258160');
             background-size: cover;
             background-attachment: fixed;
             min-height: 100vh;
+            color: #333;
         }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; }
-        .stats-grid { display: flex; gap: 10px; margin-bottom: 20px; }
-        .stat-box { flex: 1; padding: 10px; text-align: center; background: #eee; border-radius: 8px; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; }
-        button { width: 100%; padding: 10px; background: blue; color: white; border: none; cursor: pointer; }
+        .container { 
+            max-width: 600px; margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 2.5rem; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        h2 { text-align: center; color: #004a6e; margin-bottom: 25px; }
+        
+        .stats-grid { display: flex; gap: 15px; margin-bottom: 30px; }
+        .stat-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; background: #f0f7fa; border: 1px solid #d1e7ef; }
+        .stat-val { display: block; font-size: 1.3rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
+
+        label { font-weight: 600; display: block; margin-top: 20px; font-size: 1rem; color: #444; }
+        input, select { 
+            width: 100%; padding: 18px; margin-top: 8px; border: 2px solid #ddd; 
+            border-radius: 12px; box-sizing: border-box; font-size: 1.1rem;
+        }
+        button { 
+            width: 100%; padding: 18px; margin-top: 20px; background-color: #0077be; 
+            color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 12px; font-size: 1.1rem;
+        }
+        button:hover { background-color: #005f99; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        .edit-btn { background: #f39c12; padding: 8px 15px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; border: none; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Wild Ocean Expenses</h2>
-        <div class="stats-grid">
-            <div class="stat-box">Erik<span id="erikTotal" style="display:block;">$0</span></div>
-            <div class="stat-box">Nadine<span id="nadineTotal" style="display:block;">$0</span></div>
-        </div>
-        <form id="expenseForm">
-            <input type="date" id="date" required>
-            <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
-            <input type="number" id="amount" placeholder="Amount" required>
-            <select id="category"><option>Groceries</option><option>Restaurant</option></select>
-            <button type="submit">Save</button>
-        </form>
+
+<div class="container">
+    <h2>🌊 Wild Ocean Expenses</h2>
+    
+    <div class="stats-grid">
+        <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Nadine<span id="nadineTotal" class="stat-val">$0.00</span></div>
+        <div class="stat-box">Balance<span id="balance" class="stat-val">$0.00</span></div>
     </div>
-    <script>
-        console.log("Script geladen"); // Check dit in je F12 Console
-        // VOEG HIER JE SCRIPT LOGICA TOE
-    </script>
+    
+    <form id="expenseForm">
+        <input type="hidden" id="editIndex" value="">
+        <label>Date</label> <input type="date" id="date" required>
+        <label>Who Paid?</label>
+        <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
+        <label>Amount ($)</label> <input type="number" id="amount" step="0.01" required>
+        <label>Category</label>
+        <select id="category">
+            <option value="Groceries">Groceries</option><option value="Restaurant">Restaurant</option>
+            <option value="Fuel">Fuel</option><option value="Gifts">Gifts</option>
+        </select>
+        <button type="submit" id="submitBtn">Save Expense</button>
+        <button type="button" id="cancelBtn" style="display:none; background:#999;" onclick="resetForm()">Cancel</button>
+    </form>
+
+    <table>
+        <thead><tr><th>Date</th><th>Who</th><th>$</th><th>Action</th></tr></thead>
+        <tbody id="expenseTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+    // 1. VUL HIER JE URL IN!
+    const SCRIPT_URL = "HIER_JE_APPS_SCRIPT_URL_PLAKKEN"; 
+    let expenses = [];
+
+    // Ophalen van data
+    async function fetchExpenses() {
+        try {
+            const res = await fetch(SCRIPT_URL);
+            expenses = await res.json();
+            renderTable();
+            updateTotals();
+        } catch(e) { console.log("Data laden mislukt"); }
+    }
+
+    // Versturen van data
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            date: document.getElementById('date').value,
+            paidBy: document.getElementById('paidBy').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            category: document.getElementById('category').value
+        };
+
+        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+        resetForm();
+        fetchExpenses();
+    });
+
+    function updateTotals() {
+        let erikT = 0, nadineT = 0;
+        expenses.forEach(i => { if(i.paidBy === 'Erik') erikT += i.amount; else nadineT += i.amount; });
+        document.getElementById('erikTotal').textContent = `$${erikT.toFixed(2)}`;
+        document.getElementById('nadineTotal').textContent = `$${nadineT.toFixed(2)}`;
+        document.getElementById('balance').textContent = `$${Math.abs(erikT - nadineT).toFixed(2)}`;
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('expenseTableBody');
+        tbody.innerHTML = '';
+        expenses.forEach((item, index) => {
+            tbody.innerHTML += `<tr><td>${item.date}</td><td>${item.paidBy}</td><td>$${item.amount.toFixed(2)}</td><td><button class="edit-btn" onclick="editExpense(${index})">Edit</button></td></tr>`;
+        });
+    }
+
+    function resetForm() {
+        document.getElementById('expenseForm').reset();
+        document.getElementById('submitBtn').textContent = "Save Expense";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    fetchExpenses();
+</script>
 </body>
 </html>
