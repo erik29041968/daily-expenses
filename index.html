@@ -27,7 +27,7 @@
 </head>
 <body>
 <div class="container">
-    <h2>Dagelijkse Uitgaven</h2>
+    <h2>DDaily Expenses</h2>
     <form id="expenseForm">
         <input type="date" id="date" required>
         <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
@@ -39,7 +39,7 @@
 </div>
 
 <script>
-    const URL = "PLAK_HIER_JE_DEPLOYMENT_URL";
+    const URL = "https://script.google.com/macros/s/AKfycbwcZGa95O-FnB60lz4K2R3LGJhqIfheIszKEkjCoyS0AVb28LfCUiEZUZPvptysSBZy/exec";
 
     function refresh() {
         fetch(URL).then(r => r.json()).then(data => {
