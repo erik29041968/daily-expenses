@@ -8,7 +8,6 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; padding: 20px; 
-            /* De Oceaan achtergrond met een witte laag eroverheen voor leesbaarheid */
             background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), 
                         url('https://images.unsplash.com/photo-1505144808409-192770258160');
             background-size: cover;
@@ -18,18 +17,16 @@
         }
         .container { 
             max-width: 600px; margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); /* Semi-transparant wit */
+            background: rgba(255, 255, 255, 0.95); 
             padding: 2.5rem; border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         h2 { text-align: center; color: #004a6e; margin-bottom: 25px; }
         
-        /* Stats Styling */
         .stats-grid { display: flex; gap: 15px; margin-bottom: 30px; }
         .stat-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; background: #f0f7fa; border: 1px solid #d1e7ef; }
         .stat-val { display: block; font-size: 1.3rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
 
-        /* Grotere Input Velden */
         label { font-weight: 600; display: block; margin-top: 20px; font-size: 1rem; color: #444; }
         input, select { 
             width: 100%; padding: 18px; margin-top: 8px; border: 2px solid #ddd; 
@@ -41,10 +38,9 @@
         }
         button:hover { background-color: #005f99; }
         
-        /* Table Styling */
         table { width: 100%; border-collapse: collapse; margin-top: 30px; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
-        .edit-btn { background: #f39c12; padding: 8px 15px; font-size: 0.9rem; border-radius: 6px; }
+        .edit-btn { background: #f39c12; padding: 8px 15px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; border: none; color: white; }
     </style>
 </head>
 <body>
@@ -75,16 +71,47 @@
 
     <table>
         <thead><tr><th>Date</th><th>Who</th><th>$</th><th>Action</th></tr></thead>
-        <tbody id="expenseTableBody">
-            </tbody>
+        <tbody id="expenseTableBody"></tbody>
     </table>
 </div>
 
 <script>
-    // Voorbeeld data array
-    let expenses = [
-        { date: '2026-04-25', paidBy: 'Erik', amount: 50.00, category: 'Groceries' }
-    ];
+    let expenses = []; // De data komt hierin
+
+    const form = document.getElementById('expenseForm');
+    
+    // Form afhandeling
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const index = document.getElementById('editIndex').value;
+        const newData = {
+            date: document.getElementById('date').value,
+            paidBy: document.getElementById('paidBy').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            category: document.getElementById('category').value
+        };
+
+        if (index === "") {
+            expenses.push(newData);
+        } else {
+            expenses[index] = newData;
+        }
+
+        renderTable();
+        updateTotals();
+        resetForm();
+    });
+
+    function updateTotals() {
+        let erikT = 0, nadineT = 0;
+        expenses.forEach(item => {
+            if (item.paidBy === 'Erik') erikT += item.amount;
+            else nadineT += item.amount;
+        });
+        document.getElementById('erikTotal').textContent = `$${erikT.toFixed(2)}`;
+        document.getElementById('nadineTotal').textContent = `$${nadineT.toFixed(2)}`;
+        document.getElementById('balance').textContent = `$${Math.abs(erikT - nadineT).toFixed(2)}`;
+    }
 
     function renderTable() {
         const tbody = document.getElementById('expenseTableBody');
@@ -113,13 +140,11 @@
     }
 
     function resetForm() {
-        document.getElementById('expenseForm').reset();
+        form.reset();
         document.getElementById('editIndex').value = "";
         document.getElementById('submitBtn').textContent = "Save Expense";
         document.getElementById('cancelBtn').style.display = "none";
     }
-
-    renderTable();
 </script>
 </body>
 </html>
