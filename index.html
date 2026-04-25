@@ -5,129 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Expenses</title>
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; padding: 20px; 
+        /* CSS voor de Oceaan look */
+        html, body { 
+            margin: 0; padding: 0; min-height: 100vh;
+            font-family: sans-serif;
             background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), 
                         url('https://images.unsplash.com/photo-1505144808409-192770258160');
-            background-size: cover;
-            background-attachment: fixed;
-            min-height: 100vh;
-            color: #333;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            background-color: #0077be; /* Fallback kleur */
         }
         .container { 
-            max-width: 600px; margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 2.5rem; border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            max-width: 500px; margin: 40px auto; background: white; 
+            padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        h2 { text-align: center; color: #004a6e; margin-bottom: 25px; }
-        
-        .stats-grid { display: flex; gap: 15px; margin-bottom: 30px; }
-        .stat-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; background: #f0f7fa; border: 1px solid #d1e7ef; }
-        .stat-val { display: block; font-size: 1.3rem; font-weight: bold; color: #004a6e; margin-top: 5px; }
-
-        label { font-weight: 600; display: block; margin-top: 20px; font-size: 1rem; color: #444; }
-        input, select { 
-            width: 100%; padding: 18px; margin-top: 8px; border: 2px solid #ddd; 
-            border-radius: 12px; box-sizing: border-box; font-size: 1.1rem;
-        }
-        button { 
-            width: 100%; padding: 18px; margin-top: 20px; background-color: #0077be; 
-            color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 12px; font-size: 1.1rem;
-        }
-        button:hover { background-color: #005f99; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
-        .edit-btn { background: #f39c12; padding: 8px 15px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; border: none; color: white; }
+        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .box { padding: 10px; background: #f0f0f0; border-radius: 8px; text-align: center; flex: 1; margin: 0 5px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 15px; background: #0077be; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🌊 Wild Ocean Expenses</h2>
-    
-    <div class="stats-grid">
-        <div class="stat-box">Erik<span id="erikTotal" class="stat-val">$0.00</span></div>
-        <div class="stat-box">Nadine<span id="nadineTotal" class="stat-val">$0.00</span></div>
-        <div class="stat-box">Balance<span id="balance" class="stat-val">$0.00</span></div>
+    <div class="stats">
+        <div class="box">Erik<br><b id="erikTotal">$0.00</b></div>
+        <div class="box">Nadine<br><b id="nadineTotal">$0.00</b></div>
     </div>
     
     <form id="expenseForm">
-        <input type="hidden" id="editIndex" value="">
         <label>Date</label> <input type="date" id="date" required>
-        <label>Who Paid?</label>
-        <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
-        <label>Amount ($)</label> <input type="number" id="amount" step="0.01" required>
-        <label>Category</label>
-        <select id="category">
-            <option value="Groceries">Groceries</option><option value="Restaurant">Restaurant</option>
-            <option value="Fuel">Fuel</option><option value="Gifts">Gifts</option>
-        </select>
-        <button type="submit" id="submitBtn">Save Expense</button>
-        <button type="button" id="cancelBtn" style="display:none; background:#999;" onclick="resetForm()">Cancel</button>
+        <label>Paid By</label>
+        <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
+        <label>Amount</label> <input type="number" id="amount" step="0.01" required> <label>Category</label>
+        <select id="category"><option>Groceries</option><option>Restaurant</option><option>Fuel</option></select>
+        <button type="submit">Save</button>
     </form>
 
-    <table>
-        <thead><tr><th>Date</th><th>Who</th><th>$</th><th>Action</th></tr></thead>
-        <tbody id="expenseTableBody"></tbody>
+    <table id="table">
+        <thead><tr><th>Date</th><th>Who</th><th>$</th></tr></thead>
+        <tbody id="body"></tbody>
     </table>
 </div>
 
 <script>
-    // 1. VUL HIER JE URL IN!
-    const SCRIPT_URL = "HIER_JE_APPS_SCRIPT_URL_PLAKKEN"; 
-    let expenses = [];
+    const URL = "HIER_JE_APPS_SCRIPT_URL_PLAKKEN"; 
 
-    // Ophalen van data
-    async function fetchExpenses() {
-        try {
-            const res = await fetch(SCRIPT_URL);
-            expenses = await res.json();
-            renderTable();
-            updateTotals();
-        } catch(e) { console.log("Data laden mislukt"); }
-    }
+    // Ophalen data
+    fetch(URL).then(res => res.json()).then(data => {
+        let eT = 0, nT = 0;
+        data.forEach(row => {
+            document.getElementById('body').innerHTML += `<tr><td>${row.date}</td><td>${row.paidBy}</td><td>${row.amount}</td></tr>`;
+            if(row.paidBy === 'Erik') eT += parseFloat(row.amount); else nT += parseFloat(row.amount);
+        });
+        document.getElementById('erikTotal').innerText = '$' + eT.toFixed(2);
+        document.getElementById('nadineTotal').innerText = '$' + nT.toFixed(2);
+    });
 
-    // Versturen van data
-    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+    // Versturen data
+    document.getElementById('expenseForm').onsubmit = (e) => {
         e.preventDefault();
         const data = {
             date: document.getElementById('date').value,
             paidBy: document.getElementById('paidBy').value,
-            amount: parseFloat(document.getElementById('amount').value),
+            amount: document.getElementById('amount').value,
             category: document.getElementById('category').value
         };
-
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-        resetForm();
-        fetchExpenses();
-    });
-
-    function updateTotals() {
-        let erikT = 0, nadineT = 0;
-        expenses.forEach(i => { if(i.paidBy === 'Erik') erikT += i.amount; else nadineT += i.amount; });
-        document.getElementById('erikTotal').textContent = `$${erikT.toFixed(2)}`;
-        document.getElementById('nadineTotal').textContent = `$${nadineT.toFixed(2)}`;
-        document.getElementById('balance').textContent = `$${Math.abs(erikT - nadineT).toFixed(2)}`;
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('expenseTableBody');
-        tbody.innerHTML = '';
-        expenses.forEach((item, index) => {
-            tbody.innerHTML += `<tr><td>${item.date}</td><td>${item.paidBy}</td><td>$${item.amount.toFixed(2)}</td><td><button class="edit-btn" onclick="editExpense(${index})">Edit</button></td></tr>`;
-        });
-    }
-
-    function resetForm() {
-        document.getElementById('expenseForm').reset();
-        document.getElementById('submitBtn').textContent = "Save Expense";
-        document.getElementById('cancelBtn').style.display = "none";
-    }
-
-    fetchExpenses();
+        fetch(URL, { method: 'POST', body: JSON.stringify(data) }).then(() => location.reload());
+    };
 </script>
 </body>
 </html>
