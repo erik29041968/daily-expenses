@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wild Ocean Expenses</title>
     <style>
-        /* Force background on body */
+        /* CSS voor de achtergrond - geforceerd om te tonen */
         body { 
-            margin: 0; padding: 0; 
+            margin: 0; 
+            padding: 0; 
             min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), 
+            background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), 
                         url('https://images.unsplash.com/photo-1505144808409-192770258160') !important;
             background-size: cover !important;
             background-position: center !important;
             background-attachment: fixed !important;
+            background-repeat: no-repeat !important;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .container { 
@@ -77,9 +79,9 @@
 </div>
 
 <script>
-    const URL = "Hhttps://script.google.com/macros/s/AKfycbyjfniBCxxquprfd29V5dY_dMLc-FhnvM8cQSqrHecd84yCucUSE8pNJQtKPOkLAxZU/exec"; 
+    // Jouw URL is hier ingevuld
+    const URL = "https://script.google.com/macros/s/AKfycbyjfniBCxxquprfd29V5dY_dMLc-FhnvM8cQSqrHecd84yCucUSE8pNJQtKPOkLAxZU/exec"; 
 
-    // Helper: Convert YYYY-MM-DD to DD/MM/YYYY
     function formatDisplayDate(dateStr) {
         if (!dateStr) return "";
         const [y, m, d] = dateStr.split('-');
@@ -98,8 +100,8 @@
                 <td>${row.paidBy}</td>
                 <td>$${amount.toFixed(2)}</td>
                 <td class="actions">
-                    <button class="icon-btn" onclick="alert('Edit logic needed')">✏️</button>
-                    <button class="icon-btn" onclick="alert('Delete logic needed')">🗑️</button>
+                    <button class="icon-btn" onclick="alert('Edit clicked')">✏️</button>
+                    <button class="icon-btn" onclick="alert('Delete clicked')">🗑️</button>
                 </td>
             </tr>`;
             if(row.paidBy === 'Erik') eT += amount; else nT += amount;
