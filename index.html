@@ -2,86 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wild Ocean Expenses</title>
     <style>
         html, body { 
-            margin: 0; padding: 0; min-height: 100vh;
+            margin: 0; padding: 0; height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #0077be url('ocean.jpg') no-repeat center center fixed !important;
             background-size: cover !important;
         }
         .container { 
-            max-width: 600px; margin: 20px auto; background: rgba(255, 255, 255, 0.95); 
-            padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%; max-width: 600px; margin: 20px auto; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 30px; border-radius: 20px;
         }
-        h2 { text-align: center; color: #004a6e; }
-        
-        /* Input & Buttons groter maken voor mobiel */
         input, select { 
-            width: 100%; padding: 18px; margin-top: 10px; border: 2px solid #ccc; 
-            border-radius: 8px; box-sizing: border-box; font-size: 16px; 
+            width: 100%; padding: 20px; margin: 10px 0; 
+            font-size: 18px; /* Grotere tekst */
+            border: 2px solid #0077be; border-radius: 10px;
         }
         button { 
-            width: 100%; padding: 18px; margin-top: 15px; background: #0077be; 
-            color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; 
+            width: 100%; padding: 20px; font-size: 18px;
+            background: #0077be; color: white; border: none; border-radius: 10px;
         }
-        
-        /* Tabel layout */
         table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; font-size: 16px; }
-        .action-btn { background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 5px; }
+        td { padding: 15px; border-bottom: 1px solid #ddd; font-size: 18px; }
+        .action-btn { font-size: 24px; background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>🌊 Expenses</h2>
     <form id="expenseForm">
         <input type="date" id="date" required>
-        <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
-        <input type="number" id="amount" step="0.01" placeholder="Amount ($)" required>
-        <button type="submit">Save Expense</button>
+        <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
+        <input type="number" id="amount" placeholder="Bedrag" required>
+        <button type="submit">Save</button>
     </form>
-
-    <table>
-        <tbody id="body"></tbody>
-    </table>
+    <table><tbody id="body"></tbody></table>
 </div>
 
 <script>
-    // PLAK HIER JE URL (Moet eindigen op /exec)
-    const URL = "https://script.google.com/macros/s/AKfycbyjfniBCxxquprfd29V5dY_dMLc-FhnvM8cQSqrHecd84yCucUSE8pNJQtKPOkLAxZU/exec"; 
-
-    // Ophalen
-    fetch(URL).then(r => r.json()).then(data => {
-        const tbody = document.getElementById('body');
-        data.forEach((row, i) => {
-            tbody.innerHTML += `<tr>
-                <td>${row.date}</td><td>${row.paidBy}</td><td>$${parseFloat(row.amount).toFixed(2)}</td>
-                <td>
-                    <button class="action-btn" onclick="editRow(${i+2}, '${row.date}', '${row.paidBy}', ${row.amount})">✏️</button>
-                    <button class="action-btn" onclick="deleteRow(${i+2})">🗑️</button>
-                </td>
-            </tr>`;
-        });
-    });
+    const URL = "PLAK_HIER_JE_DEPLOYMENT_URL";
 
     function deleteRow(index) {
-        if(!confirm('Verwijderen?')) return;
         fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', index: index }) })
         .then(() => location.reload());
     }
 
-    function editRow(index, oldDate, oldWho, oldAmt) {
-        const date = prompt("Date:", oldDate);
-        const paidBy = prompt("Who:", oldWho);
-        const amount = prompt("Amount:", oldAmt);
-        if(date && paidBy && amount) {
-            fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'edit', index: index, date, paidBy, amount }) })
+    function editRow(index, d, w, a) {
+        const date = prompt("Datum:", d);
+        const paidBy = prompt("Wie:", w);
+        const amount = prompt("Bedrag:", a);
+        if(date) {
+            fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'edit', index: index, date: date, paidBy: paidBy, amount: amount }) })
             .then(() => location.reload());
         }
     }
+
+    fetch(URL).then(r => r.json()).then(data => {
+        const tbody = document.getElementById('body');
+        data.forEach((row, i) => {
+            tbody.innerHTML += `<tr><td>${row.date}</td><td>${row.paidBy}</td><td>$${row.amount}</td>
+            <td><button class="action-btn" onclick="editRow(${i+2},'${row.date}','${row.paidBy}',${row.amount})">✏️</button>
+            <button class="action-btn" onclick="deleteRow(${i+2})">🗑️</button></td></tr>`;
+        });
+    });
 
     document.getElementById('expenseForm').onsubmit = (e) => {
         e.preventDefault();
