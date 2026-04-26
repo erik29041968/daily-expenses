@@ -1,56 +1,57 @@
-<table id="expenseTable">
-    <thead>
-        <tr><th>Datum</th><th>Info</th><th>Bedrag</th><th>Actie</th></tr>
-    </thead>
-    <tbody id="body"></tbody>
-</table>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses</title>
+</head>
+<body>
+    <h2>Daily Expenses</h2>
+    <form id="expenseForm">
+        <input type="date" id="date" required>
+        <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
+        <select id="category"><option>Groceries</option><option>Coffee</option><option>Fuel</option><option>Other</option></select>
+        <input type="number" id="amount" placeholder="Bedrag" step="0.01" required>
+        <button type="submit">ADD</button>
+    </form>
+    <div id="status">Laden...</div>
+    <table border="1"><thead><tr><th>Datum</th><th>Info</th><th>Bedrag</th><th>Actie</th></tr></thead><tbody id="body"></tbody></table>
 
-<script>
-    const URL = "PLAK_HIER_JE_DEPLOYMENT_URL";
+    <script>
+        const URL = "https://script.google.com/macros/s/AKfycbyCNqUQy1MtYje3j3MOljq5DqWVFpFlGwuTnPkKinFVSLSsjMy-PKh3lYgtYn3-LaJD/exec";
 
-    function refresh() {
-        fetch(URL).then(r => r.json()).then(data => {
-            const tbody = document.getElementById('body');
-            tbody.innerHTML = "";
-            data.forEach((row, i) => {
-                // Datum formatteren (check of het een geldige datum is)
-                let d = new Date(row.date);
-                let dateStr = !isNaN(d) ? d.toLocaleDateString('nl-NL') : row.date;
-                
-                tbody.innerHTML += `<tr>
-                    <td>${dateStr}</td>
-                    <td><b>${row.category}</b> (${row.paidBy})</td>
-                    <td>$${row.amount}</td>
-                    <td><button onclick="del(${i+2})">🗑️</button></td>
-                </tr>`;
-            });
-        });
-    }
+        function refresh() {
+            document.getElementById('status').innerText = "Laden...";
+            fetch(URL).then(r => r.json()).then(data => {
+                const tbody = document.getElementById('body');
+                tbody.innerHTML = "";
+                document.getElementById('status').innerText = "";
+                data.forEach((row, i) => {
+                    tbody.innerHTML += `<tr>
+                        <td>${row.date}</td>
+                        <td>${row.category} (${row.paidBy})</td>
+                        <td>$${row.amount}</td>
+                        <td><button onclick="del(${i+2})">🗑️</button></td>
+                    </tr>`;
+                });
+            }).catch(e => { document.getElementById('status').innerText = "Fout: " + e; });
+        }
 
-    async function del(idx) {
-        if(!confirm("Verwijderen?")) return;
-        await fetch(URL, { 
-            method: 'POST', 
-            body: JSON.stringify({ action: 'delete', index: idx }) 
-        });
-        refresh();
-    }
+        async function del(idx) {
+            await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', index: idx }) });
+            refresh();
+        }
 
-    document.getElementById('expenseForm').onsubmit = (e) => {
-        e.preventDefault();
-        fetch(URL, { 
-            method: 'POST', 
-            body: JSON.stringify({
+        document.getElementById('expenseForm').onsubmit = (e) => {
+            e.preventDefault();
+            fetch(URL, { method: 'POST', body: JSON.stringify({
                 date: document.getElementById('date').value,
                 paidBy: document.getElementById('paidBy').value,
                 category: document.getElementById('category').value,
                 amount: document.getElementById('amount').value
-            })
-        }).then(() => { 
-            refresh(); 
-            document.getElementById('expenseForm').reset(); 
-        });
-    };
-
-    refresh();
-</script>
+            })}).then(() => { refresh(); document.getElementById('expenseForm').reset(); });
+        };
+        refresh();
+    </script>
+</body>
+</html>
