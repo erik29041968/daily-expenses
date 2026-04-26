@@ -1,40 +1,30 @@
 <!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expenses</title>
-</head>
+<html>
 <body>
-    <h2>Daily Expenses</h2>
+    <h2>Expenses</h2>
     <form id="expenseForm">
         <input type="date" id="date" required>
         <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
         <select id="category"><option>Groceries</option><option>Coffee</option><option>Fuel</option><option>Other</option></select>
-        <input type="number" id="amount" placeholder="Bedrag" step="0.01" required>
+        <input type="number" id="amount" placeholder="Bedrag" required>
         <button type="submit">ADD</button>
     </form>
-    <div id="status">Laden...</div>
-    <table border="1"><thead><tr><th>Datum</th><th>Info</th><th>Bedrag</th><th>Actie</th></tr></thead><tbody id="body"></tbody></table>
+    <table><tbody id="body"></tbody></table>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbyCNqUQy1MtYje3j3MOljq5DqWVFpFlGwuTnPkKinFVSLSsjMy-PKh3lYgtYn3-LaJD/exec";
+        const URL = "https://script.google.com/macros/s/AKfycby-4f8KtlM3k5-TaT09VAuwdqb47bXviWUfPtMKetJScB92IYzW1_N4tLWswyEBP_Hf/exec";
 
         function refresh() {
-            document.getElementById('status').innerText = "Laden...";
             fetch(URL).then(r => r.json()).then(data => {
                 const tbody = document.getElementById('body');
                 tbody.innerHTML = "";
-                document.getElementById('status').innerText = "";
                 data.forEach((row, i) => {
                     tbody.innerHTML += `<tr>
-                        <td>${row.date}</td>
-                        <td>${row.category} (${row.paidBy})</td>
-                        <td>$${row.amount}</td>
+                        <td>${row.date} - ${row.category} (${row.paidBy}) - $${row.amount}</td>
                         <td><button onclick="del(${i+2})">🗑️</button></td>
                     </tr>`;
                 });
-            }).catch(e => { document.getElementById('status').innerText = "Fout: " + e; });
+            });
         }
 
         async function del(idx) {
