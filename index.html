@@ -14,13 +14,19 @@
     <script>
         const URL = "https://script.google.com/macros/s/AKfycby-4f8KtlM3k5-TaT09VAuwdqb47bXviWUfPtMKetJScB92IYzW1_N4tLWswyEBP_Hf/exec";
 
-        function refresh() {
+       function refresh() {
             fetch(URL).then(r => r.json()).then(data => {
                 const tbody = document.getElementById('body');
                 tbody.innerHTML = "";
                 data.forEach((row, i) => {
+                    // Pak alleen het gedeelte voor de 'T' (bijv: 2026-04-20)
+                    let shortDate = row.date.split('T')[0];
+                    
                     tbody.innerHTML += `<tr>
-                        <td>${row.date} - ${row.category} (${row.paidBy}) - $${row.amount}</td>
+                        <td>${shortDate}</td>
+                        <td>${row.category}</td>
+                        <td>(${row.paidBy})</td>
+                        <td>$${row.amount}</td>
                         <td><button onclick="del(${i+2})">🗑️</button></td>
                     </tr>`;
                 });
