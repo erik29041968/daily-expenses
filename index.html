@@ -2,15 +2,28 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses Kiwi & Erik</title>
     <style>
-        html, body { margin: 0; padding: 0; min-height: 100vh; font-family: sans-serif; background: #0077be url('ocean.jpg') no-repeat center center fixed !important; background-size: cover !important; }
-        .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { background: #0077be; color: white; cursor: pointer; border: none; }
+        /* Achtergrond met ocean.jpg */
+        html, body { 
+            margin: 0; padding: 0; min-height: 100vh; 
+            font-family: sans-serif; 
+            background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
+            background-size: cover !important; 
+        }
+        .container { 
+            max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
+            padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        input, select, button { 
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
+            border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        }
+        button { background: #0077be; color: white; cursor: pointer; border: none; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; cursor: pointer; }
+        .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,7 +49,7 @@
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
             data.forEach((row, i) => {
-                // Hier halen we de tijd weg en tonen alleen de datum
+                // Splits datum op 'T' om tijdstip te verwijderen
                 let cleanDate = row.date.toString().split('T')[0];
                 
                 tbody.innerHTML += `<tr>
@@ -53,6 +66,7 @@
 
     function edit(idx, date, paidBy, category, amount) {
         document.getElementById('editIndex').value = idx;
+        // Zorg dat datumveld ook weer op datumformaat staat voor edit
         document.getElementById('date').value = date.split('T')[0];
         document.getElementById('paidBy').value = paidBy;
         document.getElementById('category').value = category;
