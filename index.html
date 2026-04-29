@@ -45,7 +45,7 @@
 </div>
 
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycbyFPCNNV61JUmZgOwXxxNdBPZomL5enFVxidu498Kvw_qoBrfagNhRQFmrRDO-E2nVw/exec";
+    const URL = "https://script.google.com/macros/s/AKfycbzacq506JzsAn13Fse4vfiolpW3XkxnFusX7_bLqLJD9N1fcdO1W1UCydeqzzdKuCVy/exec";
     let editMode = false;
 
     function refresh() {
@@ -68,7 +68,7 @@
         })
         .catch(err => {
             console.error(err);
-            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden. Check console (F12).</td></tr>";
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
         });
     }
 
@@ -90,6 +90,10 @@
 
     document.getElementById('expenseForm').onsubmit = (e) => {
         e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "Bezig...";
+        btn.disabled = true;
+        
         const action = editMode ? 'update' : 'add';
         fetch(URL, { method: 'POST', body: JSON.stringify({
             action: action,
@@ -101,7 +105,8 @@
         })}).then(() => { 
             refresh(); 
             document.getElementById('expenseForm').reset();
-            document.getElementById('submitBtn').innerText = "ADD";
+            btn.innerText = editMode ? "UPDATE" : "ADD";
+            btn.disabled = false;
             editMode = false;
         });
     };
