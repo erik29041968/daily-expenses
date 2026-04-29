@@ -5,21 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses Kiwi & Erik</title>
     <style>
-        html, body { 
-            margin: 0; padding: 0; min-height: 100vh; 
-            font-family: Arial, sans-serif; 
-            background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
-            background-size: cover !important; 
-        }
-        .container { 
-            max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
-            padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
-        }
+        html, body { margin: 0; padding: 0; min-height: 100vh; font-family: Arial, sans-serif; 
+                     background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
+                     background-size: cover !important; }
+        .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
+                     padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         form, table { width: 100%; }
-        input, select, button { 
-            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
-            border-radius: 8px; box-sizing: border-box; font-size: 16px;
-        }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
+                                border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
         table { border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
@@ -49,7 +42,8 @@
     let editMode = false;
 
     function refresh() {
-        fetch(URL)
+        // We voegen "?t=" + Date.now() toe om de browser te dwingen de data opnieuw te halen
+        fetch(URL + "?t=" + Date.now())
         .then(r => r.json())
         .then(data => {
             const tbody = document.getElementById('body');
@@ -60,7 +54,7 @@
                     <td>${cleanDate}<br><b>${row.category || ''}</b> (${row.paidBy || ''})</td>
                     <td>$${row.amount || '0'}</td>
                     <td>
-                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', '${row.amount}')">📝</button>
+                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', ${row.amount})">📝</button>
                         <button class="icon-btn" onclick="del(${i+2})">🗑️</button>
                     </td>
                 </tr>`;
@@ -80,6 +74,7 @@
         document.getElementById('amount').value = amount;
         document.getElementById('submitBtn').innerText = "UPDATE";
         editMode = true;
+        window.scrollTo(0,0); // Scroll naar boven zodat je direct ziet dat je in edit-mode bent
     }
 
     async function del(idx) {
@@ -103,11 +98,14 @@
             category: document.getElementById('category').value,
             amount: document.getElementById('amount').value
         })}).then(() => { 
-            refresh(); 
-            document.getElementById('expenseForm').reset();
-            btn.innerText = editMode ? "UPDATE" : "ADD";
-            btn.disabled = false;
-            editMode = false;
+            // Een korte pauze (500ms) om Google Sheet de tijd te geven om te verwerken
+            setTimeout(() => {
+                refresh(); 
+                document.getElementById('expenseForm').reset();
+                btn.innerText = "ADD";
+                btn.disabled = false;
+                editMode = false;
+            }, 500);
         });
     };
 
