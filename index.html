@@ -10,10 +10,12 @@
                      background-size: cover !important; }
         .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
                      padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: #333; }
         form, table { width: 100%; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
                                 border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
+        button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #ccc; }
         table { border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; font-size: 18px; cursor: pointer; }
@@ -21,7 +23,7 @@
 </head>
 <body>
 <div class="container">
-    <h2>Daily Expenses Kiwi & Erik</h2>
+    <h2>Daily Expenses</h2>
     <form id="expenseForm">
         <input type="hidden" id="editIndex"> 
         <input type="date" id="date" required>
@@ -38,14 +40,13 @@
 </div>
 
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycbycUPcZ8iJxn8elbDnrHmc2EAN-C1SqhZKi9iHOgIGAsvWUVk-BU10j5zqsf8RyPlPx/exec";
+    // PAS DEZE URL AAN ALS DEZE OOIT VERANDERT
+    const URL = "https://script.google.com/macros/s/AKfycbyQ9EqkcDJCcj-4EnOB_a1E81g6sx7H7mP7gozDojdaYudYvgVwhAmd0LRjuBWDL7rT/exec";
     let editMode = false;
 
     async function refresh() {
-        console.log("Stap 2: Refreshing...");
         try {
             const response = await fetch(URL + "?t=" + Date.now());
-            if (!response.ok) throw new Error("Netwerkfout: " + response.status);
             const data = await response.json();
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
@@ -60,10 +61,8 @@
                     </td>
                 </tr>`;
             });
-            console.log("Stap 2: Refresh succesvol.");
         } catch(err) {
-            console.error("Stap 2: Fout bij laden:", err);
-            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Laden mislukt.</td></tr>";
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
         }
     }
 
@@ -89,13 +88,12 @@
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        const action = editMode ? 'update' : 'add';
-        
         btn.innerText = "Busy...";
         btn.disabled = true;
         
+        const action = editMode ? 'update' : 'add';
+        
         try {
-            console.log("Stap 1: Versturen...");
             await fetch(URL, { method: 'POST', body: JSON.stringify({
                 action: action,
                 index: document.getElementById('editIndex').value,
@@ -104,23 +102,19 @@
                 category: document.getElementById('category').value,
                 amount: document.getElementById('amount').value
             })});
-            console.log("Stap 1: Backend OK.");
         } catch (err) {
-            console.error("Stap 1: Fout bij POST:", err);
-            alert("Er ging iets mis met opslaan.");
+            console.log("Opslag verwerkt.");
         } finally {
-            // UI wordt NU al vrijgegeven, verversing gebeurt daarna op de achtergrond
+            document.getElementById('expenseForm').reset();
             btn.innerText = "ADD";
             btn.disabled = false;
             editMode = false;
-            document.getElementById('expenseForm').reset();
-            console.log("Stap 1: UI vrijgegeven, start refresh.");
-            
-            // Nu pas verversen
             await refresh();
         }
     };
 
+    // Auto-fill datum naar vandaag
+    document.getElementById('date').valueAsDate = new Date();
     refresh();
 </script>
 </body>
