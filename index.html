@@ -2,15 +2,26 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses Kiwi & Erik</title>
     <style>
-        html, body { margin: 0; padding: 0; min-height: 100vh; font-family: sans-serif; 
-                     background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
-                     background-size: cover !important; }
-        .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { background: #0077be; color: white; cursor: pointer; border: none; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        html, body { 
+            margin: 0; padding: 0; min-height: 100vh; 
+            font-family: Arial, sans-serif; 
+            background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
+            background-size: cover !important; 
+        }
+        .container { 
+            max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
+            padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        form, table { width: 100%; }
+        input, select, button { 
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
+            border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        }
+        button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; }
+        table { border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; font-size: 18px; cursor: pointer; }
     </style>
@@ -21,8 +32,8 @@
     <form id="expenseForm">
         <input type="hidden" id="editIndex"> 
         <input type="date" id="date" required>
-        <select id="paidBy"><option>Erik</option><option>Nadine</option></select>
-        <select id="category"><option>Groceries</option><option>Coffee</option><option>Fuel</option><option>Other</option></select>
+        <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
+        <select id="category"><option value="Groceries">Groceries</option><option value="Coffee">Coffee</option><option value="Fuel">Fuel</option><option value="Other">Other</option></select>
         <input type="number" id="amount" placeholder="Amount" step="0.01" required>
         <button type="submit" id="submitBtn">ADD</button>
     </form>
@@ -34,40 +45,30 @@
 </div>
 
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycbzimmyoAT32qAM8PCbuu2xLGdlgbIcskNlGkO572iq4dEc0dcDorNTsyDzsj-Df9J9q/exec;
+    const URL = "https://script.google.com/macros/s/AKfycbzacq506JzsAn13Fse4vfiolpW3XkxnFusX7_bLqLJD9N1fcdO1W1UCydeqzzdKuCVy/exec";
     let editMode = false;
 
     function refresh() {
         fetch(URL)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            console.log("Data ontvangen:", data); // Check F12 Console voor deze output
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
-            
-            if (data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3'>Geen gegevens gevonden.</td></tr>";
-                return;
-            }
-
             data.forEach((row, i) => {
-                // Veilig omgaan met de datum
-                let dString = String(row.date || "");
-                let cleanDate = dString.split('T')[0];
-                
+                let cleanDate = String(row.date || "").split('T')[0];
                 tbody.innerHTML += `<tr>
                     <td>${cleanDate}<br><b>${row.category || ''}</b> (${row.paidBy || ''})</td>
-                    <td>$${row.amount || '0.00'}</td>
+                    <td>$${row.amount || '0'}</td>
                     <td>
-                        <button class="icon-btn" onclick="edit(${i+2}, '${dString}', '${row.paidBy}', '${row.category}', '${row.amount}')">📝</button>
+                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', '${row.amount}')">📝</button>
                         <button class="icon-btn" onclick="del(${i+2})">🗑️</button>
                     </td>
                 </tr>`;
             });
         })
         .catch(err => {
-            console.error("Fout:", err);
-            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
+            console.error(err);
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden. Check console (F12).</td></tr>";
         });
     }
 
