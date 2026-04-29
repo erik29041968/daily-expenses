@@ -2,24 +2,13 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses Kiwi & Erik</title>
     <style>
-        /* Achtergrond met ocean.jpg */
-        html, body { 
-            margin: 0; padding: 0; min-height: 100vh; 
-            font-family: sans-serif; 
-            background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
-            background-size: cover !important; 
-        }
-        .container { 
-            max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
-            padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
-        }
-        input, select, button { 
-            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
-            border-radius: 8px; box-sizing: border-box; font-size: 16px;
-        }
+        html, body { margin: 0; padding: 0; min-height: 100vh; font-family: sans-serif; 
+                     background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
+                     background-size: cover !important; }
+        .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         button { background: #0077be; color: white; cursor: pointer; border: none; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
@@ -37,7 +26,11 @@
         <input type="number" id="amount" placeholder="Amount" step="0.01" required>
         <button type="submit" id="submitBtn">ADD</button>
     </form>
-    <table><tbody id="body"></tbody></table>
+    <table>
+        <tbody id="body">
+            <tr><td colspan="3">Laden...</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -45,28 +38,41 @@
     let editMode = false;
 
     function refresh() {
-        fetch(URL).then(r => r.json()).then(data => {
+        fetch(URL)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data ontvangen:", data); // Check F12 Console voor deze output
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
+            
+            if (data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3'>Geen gegevens gevonden.</td></tr>";
+                return;
+            }
+
             data.forEach((row, i) => {
-                // Splits datum op 'T' om tijdstip te verwijderen
-                let cleanDate = row.date.toString().split('T')[0];
+                // Veilig omgaan met de datum
+                let dString = String(row.date || "");
+                let cleanDate = dString.split('T')[0];
                 
                 tbody.innerHTML += `<tr>
-                    <td>${cleanDate}<br><b>${row.category}</b> (${row.paidBy})</td>
-                    <td>$${row.amount}</td>
+                    <td>${cleanDate}<br><b>${row.category || ''}</b> (${row.paidBy || ''})</td>
+                    <td>$${row.amount || '0.00'}</td>
                     <td>
-                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', ${row.amount})">📝</button>
+                        <button class="icon-btn" onclick="edit(${i+2}, '${dString}', '${row.paidBy}', '${row.category}', '${row.amount}')">📝</button>
                         <button class="icon-btn" onclick="del(${i+2})">🗑️</button>
                     </td>
                 </tr>`;
             });
+        })
+        .catch(err => {
+            console.error("Fout:", err);
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
         });
     }
 
     function edit(idx, date, paidBy, category, amount) {
         document.getElementById('editIndex').value = idx;
-        // Zorg dat datumveld ook weer op datumformaat staat voor edit
         document.getElementById('date').value = date.split('T')[0];
         document.getElementById('paidBy').value = paidBy;
         document.getElementById('category').value = category;
