@@ -42,9 +42,10 @@
     let editMode = false;
 
     async function refresh() {
-        console.log("Refreshing data...");
+        console.log("Stap 2: Refreshing...");
         try {
             const response = await fetch(URL + "?t=" + Date.now());
+            if (!response.ok) throw new Error("Netwerkfout: " + response.status);
             const data = await response.json();
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
@@ -59,9 +60,10 @@
                     </td>
                 </tr>`;
             });
+            console.log("Stap 2: Refresh succesvol.");
         } catch(err) {
-            console.error("Fout bij laden:", err);
-            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
+            console.error("Stap 2: Fout bij laden:", err);
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Laden mislukt.</td></tr>";
         }
     }
 
@@ -78,27 +80,22 @@
 
     async function del(idx) {
         if(!confirm("Ok to delete?")) return;
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "Busy...";
-        btn.disabled = true;
         try {
             await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', index: idx }) });
             await refresh();
         } catch(e) { console.error(e); }
-        btn.innerText = "ADD";
-        btn.disabled = false;
     }
 
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
+        const action = editMode ? 'update' : 'add';
+        
         btn.innerText = "Busy...";
         btn.disabled = true;
         
-        const action = editMode ? 'update' : 'add';
-        
         try {
-            console.log("Versturen naar backend...");
+            console.log("Stap 1: Versturen...");
             await fetch(URL, { method: 'POST', body: JSON.stringify({
                 action: action,
                 index: document.getElementById('editIndex').value,
@@ -107,19 +104,20 @@
                 category: document.getElementById('category').value,
                 amount: document.getElementById('amount').value
             })});
-            
-            console.log("Backend klaar, verversen...");
-            await refresh(); 
-            document.getElementById('expenseForm').reset();
+            console.log("Stap 1: Backend OK.");
         } catch (err) {
-            console.error("Fout bij opslaan:", err);
-            alert("Er ging iets mis met opslaan. Check de console (F12).");
+            console.error("Stap 1: Fout bij POST:", err);
+            alert("Er ging iets mis met opslaan.");
         } finally {
-            // DEZE REGELS WORDEN ALTIJD UITGEVOERD, OOK BIJ FOUTEN
+            // UI wordt NU al vrijgegeven, verversing gebeurt daarna op de achtergrond
             btn.innerText = "ADD";
             btn.disabled = false;
             editMode = false;
-            console.log("Formulier gereset.");
+            document.getElementById('expenseForm').reset();
+            console.log("Stap 1: UI vrijgegeven, start refresh.");
+            
+            // Nu pas verversen
+            await refresh();
         }
     };
 
