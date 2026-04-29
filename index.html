@@ -42,7 +42,6 @@
     let editMode = false;
 
     function refresh() {
-        // We voegen "?t=" + Date.now() toe om de browser te dwingen de data opnieuw te halen
         fetch(URL + "?t=" + Date.now())
         .then(r => r.json())
         .then(data => {
@@ -74,7 +73,7 @@
         document.getElementById('amount').value = amount;
         document.getElementById('submitBtn').innerText = "UPDATE";
         editMode = true;
-        window.scrollTo(0,0); // Scroll naar boven zodat je direct ziet dat je in edit-mode bent
+        window.scrollTo(0,0);
     }
 
     async function del(idx) {
@@ -86,7 +85,7 @@
     document.getElementById('expenseForm').onsubmit = (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.innerText = "Bezig...";
+        btn.innerText = "Busy..."; // Veranderd naar Busy
         btn.disabled = true;
         
         const action = editMode ? 'update' : 'add';
@@ -98,14 +97,12 @@
             category: document.getElementById('category').value,
             amount: document.getElementById('amount').value
         })}).then(() => { 
-            // Een korte pauze (500ms) om Google Sheet de tijd te geven om te verwerken
-            setTimeout(() => {
-                refresh(); 
-                document.getElementById('expenseForm').reset();
-                btn.innerText = "ADD";
-                btn.disabled = false;
-                editMode = false;
-            }, 500);
+            // Hier is de setTimeout verwijderd voor directe actie
+            refresh(); 
+            document.getElementById('expenseForm').reset();
+            btn.innerText = "ADD";
+            btn.disabled = false;
+            editMode = false;
         });
     };
 
