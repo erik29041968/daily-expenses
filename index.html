@@ -19,6 +19,10 @@
         table { border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; font-size: 18px; cursor: pointer; }
+        
+        /* Nieuwe stijl voor de Settlement Box */
+        #settlementBox { margin-top: 20px; padding: 15px; background: #eef7ff; border: 1px solid #0077be; 
+                         border-radius: 8px; text-align: center; color: #333; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,6 +36,9 @@
         <input type="number" id="amount" placeholder="Amount" step="0.01" required>
         <button type="submit" id="submitBtn">ADD</button>
     </form>
+    
+    <div id="settlementBox">Calculating balance...</div>
+    
     <table>
         <tbody id="body">
             <tr><td colspan="3">Laden...</td></tr>
@@ -40,7 +47,6 @@
 </div>
 
 <script>
-    // PAS DEZE URL AAN ALS DEZE OOIT VERANDERT
     const URL = "https://script.google.com/macros/s/AKfycbyQ9EqkcDJCcj-4EnOB_a1E81g6sx7H7mP7gozDojdaYudYvgVwhAmd0LRjuBWDL7rT/exec";
     let editMode = false;
 
@@ -50,19 +56,46 @@
             const data = await response.json();
             const tbody = document.getElementById('body');
             tbody.innerHTML = "";
+            
+            let erikPaid = 0;
+            let nadinePaid = 0;
+
             data.forEach((row, i) => {
+                let amt = parseFloat(row.amount) || 0;
+                if (row.paidBy === 'Erik') erikPaid += amt;
+                else if (row.paidBy === 'Nadine') nadinePaid += amt;
+
                 let cleanDate = String(row.date || "").split('T')[0];
                 tbody.innerHTML += `<tr>
                     <td>${cleanDate}<br><b>${row.category || ''}</b> (${row.paidBy || ''})</td>
-                    <td>$${row.amount || '0'}</td>
+                    <td>$${amt.toFixed(2)}</td>
                     <td>
-                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', ${row.amount})">📝</button>
+                        <button class="icon-btn" onclick="edit(${i+2}, '${row.date}', '${row.paidBy}', '${row.category}', ${amt})">📝</button>
                         <button class="icon-btn" onclick="del(${i+2})">🗑️</button>
                     </td>
                 </tr>`;
             });
+
+            updateSettlement(erikPaid, nadinePaid);
+
         } catch(err) {
             document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
+        }
+    }
+
+    function updateSettlement(erikPaid, nadinePaid) {
+        const total = erikPaid + nadinePaid;
+        const target = total / 2;
+        const box = document.getElementById('settlementBox');
+        
+        let diff = erikPaid - target; // Positief: Erik heeft te veel betaald. Negatief: Nadine heeft te veel betaald.
+        
+        if (Math.abs(diff) < 0.01) {
+            box.innerHTML = "Perfect balanced! (50/50)";
+        } else if (diff > 0) {
+            box.innerHTML = `Nadine owes Erik: <b>$${diff.toFixed(2)}</b>`;
+        } else {
+            box.innerHTML = `Erik owes Nadine: <b>$${Math.abs(diff).toFixed(2)}</b>`;
         }
     }
 
@@ -90,7 +123,6 @@
         const btn = document.getElementById('submitBtn');
         btn.innerText = "Busy...";
         btn.disabled = true;
-        
         const action = editMode ? 'update' : 'add';
         
         try {
@@ -102,9 +134,8 @@
                 category: document.getElementById('category').value,
                 amount: document.getElementById('amount').value
             })});
-        } catch (err) {
-            console.log("Opslag verwerkt.");
-        } finally {
+        } catch (err) { console.log("Opslag."); } 
+        finally {
             document.getElementById('expenseForm').reset();
             btn.innerText = "ADD";
             btn.disabled = false;
@@ -113,7 +144,6 @@
         }
     };
 
-    // Auto-fill datum naar vandaag
     document.getElementById('date').valueAsDate = new Date();
     refresh();
 </script>
