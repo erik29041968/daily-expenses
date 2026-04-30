@@ -23,7 +23,6 @@
         #settlementBox { margin-top: 20px; padding: 15px; background: #eef7ff; border: 1px solid #0077be; 
                          border-radius: 8px; text-align: center; color: #333; font-weight: bold; }
 
-        /* New Month Header Styling */
         .month-header { 
             background: #0077be; color: white; padding: 10px; cursor: pointer; 
             margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
@@ -49,7 +48,6 @@
     <div id="settlementBox">Calculating balance...</div>
     
     <div id="expenseList">
-        <!-- Months will be injected here -->
         <p style="text-align:center; padding:20px;">Charging kiwis...</p>
     </div>
 </div>
@@ -61,7 +59,10 @@
     async function refresh() {
         try {
             const response = await fetch(URL + "?t=" + Date.now());
-            let data = await response.json();
+            let rawData = await response.json();
+            
+            // Map original Google Sheet index before sorting (Sheet row = array index + 2)
+            let data = rawData.map((item, index) => ({ ...item, sheetIndex: index + 2 }));
             
             // Sort by date: Newest at the top
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -72,9 +73,8 @@
             let erikPaid = 0;
             let nadinePaid = 0;
 
-            // Group data by Month
             const groups = {};
-            data.forEach((row, i) => {
+            data.forEach((row) => {
                 let amt = parseFloat(row.amount) || 0;
                 if (row.paidBy === 'Erik') erikPaid += amt;
                 else if (row.paidBy === 'Nadine') nadinePaid += amt;
@@ -82,14 +82,13 @@
                 const d = new Date(row.date);
                 const monthName = d.toLocaleString('default', { month: 'long', year: 'numeric' });
                 if (!groups[monthName]) groups[monthName] = [];
-                groups[monthName].push({ ...row, originalIndex: i + 2 });
+                groups[monthName].push(row);
             });
 
             const currentMonthName = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
             for (const month in groups) {
                 const isCurrentMonth = (month === currentMonthName);
-                
                 const monthSection = document.createElement('div');
                 monthSection.innerHTML = `
                     <div class="month-header" onclick="toggleMonth(this)">
@@ -106,8 +105,8 @@
                                         <td>${cleanDate}<br><b>${row.category || ''}</b> (${row.paidBy || ''})</td>
                                         <td>$${amt.toFixed(2)}</td>
                                         <td style="text-align:right">
-                                            <button class="icon-btn" onclick="edit(${row.originalIndex}, '${row.date}', '${row.paidBy}', '${row.category}', ${amt})">📝</button>
-                                            <button class="icon-btn" onclick="del(${row.originalIndex})">🗑️</button>
+                                            <button class="icon-btn" onclick="edit(${row.sheetIndex}, '${row.date}', '${row.paidBy}', '${row.category}', ${amt})">📝</button>
+                                            <button class="icon-btn" onclick="del(${row.sheetIndex})">🗑️</button>
                                         </td>
                                     </tr>`;
                                 }).join('')}
@@ -168,18 +167,22 @@
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
+        const originalText = editMode ? "UPDATE" : "ADD";
         btn.innerText = "Busy...";
         btn.disabled = true;
+        
         const action = editMode ? 'update' : 'add';
+        const payload = {
+            action: action,
+            index: document.getElementById('editIndex').value,
+            date: document.getElementById('date').value,
+            paidBy: document.getElementById('paidBy').value,
+            category: document.getElementById('category').value,
+            amount: document.getElementById('amount').value
+        };
+
         try {
-            await fetch(URL, { method: 'POST', body: JSON.stringify({
-                action: action,
-                index: document.getElementById('editIndex').value,
-                date: document.getElementById('date').value,
-                paidBy: document.getElementById('paidBy').value,
-                category: document.getElementById('category').value,
-                amount: document.getElementById('amount').value
-            })});
+            await fetch(URL, { method: 'POST', body: JSON.stringify(payload)});
         } catch (err) { console.log("Save error."); } 
         finally {
             document.getElementById('expenseForm').reset();
