@@ -5,27 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses Kiwi & Erik</title>
     <style>
-        html, body { margin: 0; padding: 0; min-height: 100vh; font-family: Arial, sans-serif; 
-                     background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
-                     background-size: cover !important; }
-        .container { max-width: 500px; margin: 20px auto; background: rgba(255,255,255,0.95); 
-                     padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh; 
+            font-family: Arial, sans-serif; 
+            background: #0077be url('ocean.jpg') no-repeat center center fixed !important; 
+            background-size: cover !important; 
+        }
+        .container { 
+            max-width: 500px; 
+            /* 15px side margins for mobile breathing room */
+            margin: 20px 15px; 
+            background: rgba(255,255,255,0.95); 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            box-sizing: border-box;
+        }
+        /* Center the container on larger screens like your laptop */
+        @media (min-width: 540px) {
+            .container { margin: 20px auto; }
+        }
+
         h2 { text-align: center; color: #333; }
         form, table { width: 100%; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; 
-                                border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+
+        /* Fix for mobile input width issues */
+        input, select, button { 
+            width: 100%; 
+            max-width: 100%; 
+            display: block; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box; /* Includes padding in width */
+            font-size: 16px; 
+            -webkit-appearance: none; /* Removes iOS default styling */
+        }
+
         button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background: #ccc; }
-        table { border-collapse: collapse; margin-top: 10px; background: white; width: 100%; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        .icon-btn { width: auto; padding: 5px; margin: 0 2px; border: none; background: none; font-size: 18px; cursor: pointer; }
+
+        /* Table fixes for narrow screens */
+        table { border-collapse: collapse; margin-top: 10px; background: white; width: 100%; table-layout: fixed; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; word-wrap: break-word; }
         
-        #settlementBox { margin-top: 20px; padding: 15px; background: #eef7ff; border: 1px solid #0077be; 
-                         border-radius: 8px; text-align: center; color: #333; font-weight: bold; }
+        .icon-btn { 
+            width: auto; 
+            padding: 5px; 
+            margin: 0 2px; 
+            border: none; 
+            background: none; 
+            font-size: 18px; 
+            cursor: pointer; 
+            display: inline-block; 
+        }
+        
+        #settlementBox { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #eef7ff; 
+            border: 1px solid #0077be; 
+            border-radius: 8px; 
+            text-align: center; 
+            color: #333; 
+            font-weight: bold; 
+        }
 
         .month-header { 
-            background: #0077be; color: white; padding: 10px; cursor: pointer; 
-            margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
+            background: #0077be; 
+            color: white; 
+            padding: 10px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
         }
         .month-content { display: none; margin-bottom: 10px; }
         .month-content.active { display: block; }
@@ -61,7 +119,7 @@
             const response = await fetch(URL + "?t=" + Date.now());
             let rawData = await response.json();
             
-            // Map original Google Sheet index before sorting (Sheet row = array index + 2)
+            // Map original Google Sheet row ID immediately
             let data = rawData.map((item, index) => ({ ...item, sheetIndex: index + 2 }));
             
             // Sort by date: Newest at the top
@@ -167,23 +225,29 @@
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        const originalText = editMode ? "UPDATE" : "ADD";
         btn.innerText = "Busy...";
         btn.disabled = true;
         
         const action = editMode ? 'update' : 'add';
-        const payload = {
-            action: action,
-            index: document.getElementById('editIndex').value,
-            date: document.getElementById('date').value,
-            paidBy: document.getElementById('paidBy').value,
-            category: document.getElementById('category').value,
-            amount: document.getElementById('amount').value
-        };
+        const rowId = document.getElementById('editIndex').value;
+
+        // Safety check to ensure row ID exists during update
+        if (editMode && !rowId) {
+            alert("Error: Row ID missing. Refreshing app...");
+            refresh();
+            return;
+        }
 
         try {
-            await fetch(URL, { method: 'POST', body: JSON.stringify(payload)});
-        } catch (err) { console.log("Save error."); } 
+            await fetch(URL, { method: 'POST', body: JSON.stringify({
+                action: action,
+                index: rowId,
+                date: document.getElementById('date').value,
+                paidBy: document.getElementById('paidBy').value,
+                category: document.getElementById('category').value,
+                amount: document.getElementById('amount').value
+            })});
+        } catch (err) { alert("Save error."); } 
         finally {
             document.getElementById('expenseForm').reset();
             btn.innerText = "ADD";
