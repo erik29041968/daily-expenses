@@ -15,7 +15,6 @@
         }
         .container { 
             max-width: 500px; 
-            /* 15px side margins for mobile breathing room */
             margin: 20px 15px; 
             background: rgba(255,255,255,0.95); 
             padding: 20px; 
@@ -23,7 +22,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
             box-sizing: border-box;
         }
-        /* Center the container on larger screens like your laptop */
         @media (min-width: 540px) {
             .container { margin: 20px auto; }
         }
@@ -31,7 +29,6 @@
         h2 { text-align: center; color: #333; }
         form, table { width: 100%; }
 
-        /* Fix for mobile input width issues */
         input, select, button { 
             width: 100%; 
             max-width: 100%; 
@@ -40,15 +37,14 @@
             margin: 8px 0; 
             border: 1px solid #ccc; 
             border-radius: 8px; 
-            box-sizing: border-box; /* Includes padding in width */
+            box-sizing: border-box; 
             font-size: 16px; 
-            -webkit-appearance: none; /* Removes iOS default styling */
+            -webkit-appearance: none;
         }
 
         button { background: #0077be; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background: #ccc; }
 
-        /* Table fixes for narrow screens */
         table { border-collapse: collapse; margin-top: 10px; background: white; width: 100%; table-layout: fixed; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; word-wrap: break-word; }
         
@@ -119,10 +115,7 @@
             const response = await fetch(URL + "?t=" + Date.now());
             let rawData = await response.json();
             
-            // Map original Google Sheet row ID immediately
             let data = rawData.map((item, index) => ({ ...item, sheetIndex: index + 2 }));
-            
-            // Sort by date: Newest at the top
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const listDiv = document.getElementById('expenseList');
@@ -174,9 +167,7 @@
                 `;
                 listDiv.appendChild(monthSection);
             }
-
             updateSettlement(erikPaid, nadinePaid);
-
         } catch(err) {
             document.getElementById('expenseList').innerHTML = "<p style='text-align:center'>Error loading data.</p>";
         }
@@ -217,7 +208,7 @@
     async function del(idx) {
         if(!confirm("Confirm delete?")) return;
         try {
-            await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', index: idx }) });
+            await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'delete', index: idx }) });
             await refresh();
         } catch(e) { console.error(e); }
     }
@@ -231,24 +222,28 @@
         const action = editMode ? 'update' : 'add';
         const rowId = document.getElementById('editIndex').value;
 
-        // Safety check to ensure row ID exists during update
         if (editMode && !rowId) {
-            alert("Error: Row ID missing. Refreshing app...");
+            alert("Error: Row ID missing.");
             refresh();
             return;
         }
 
         try {
-            await fetch(URL, { method: 'POST', body: JSON.stringify({
-                action: action,
-                index: rowId,
-                date: document.getElementById('date').value,
-                paidBy: document.getElementById('paidBy').value,
-                category: document.getElementById('category').value,
-                amount: document.getElementById('amount').value
-            })});
-        } catch (err) { alert("Save error."); } 
-        finally {
+            await fetch(URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({
+                    action: action,
+                    index: rowId,
+                    date: document.getElementById('date').value,
+                    paidBy: document.getElementById('paidBy').value,
+                    category: document.getElementById('category').value,
+                    amount: document.getElementById('amount').value
+                })
+            });
+        } catch (err) { 
+            console.log("Notice:", err); 
+        } finally {
             document.getElementById('expenseForm').reset();
             btn.innerText = "ADD";
             btn.disabled = false;
