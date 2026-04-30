@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,14 +33,14 @@
         <select id="paidBy"><option value="Erik">Erik</option><option value="Nadine">Nadine</option></select>
         <select id="category"><option value="Groceries">Groceries</option><option value="Coffee">Coffee</option><option value="Fuel">Fuel</option><option value="Gifts">Gifts</option><option value="Other">Other</option></select>
         <input type="number" id="amount" placeholder="Amount" step="0.01" required>
-        <button type="submit" id="submitBtn">TOEVOEGEN</button>
+        <button type="submit" id="submitBtn">ADD</button>
     </form>
     
-    <div id="settlementBox">Balans berekenen...</div>
+    <div id="settlementBox">Calculating balance...</div>
     
     <table>
         <tbody id="body">
-            <tr><td colspan="3">Kiwis aan het laden..</td></tr>
+            <tr><td colspan="3">Charging kiwis...</td></tr>
         </tbody>
     </table>
 </div>
@@ -54,7 +54,7 @@
             const response = await fetch(URL + "?t=" + Date.now());
             let data = await response.json();
             
-            // Sorteren op datum: Nieuwste bovenaan
+            // Sort by date: Newest at the top
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const tbody = document.getElementById('body');
@@ -82,7 +82,7 @@
             updateSettlement(erikPaid, nadinePaid);
 
         } catch(err) {
-            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Fout bij laden.</td></tr>";
+            document.getElementById('body').innerHTML = "<tr><td colspan='3'>Error loading data.</td></tr>";
         }
     }
 
@@ -94,11 +94,11 @@
         let diff = erikPaid - target; 
         
         if (Math.abs(diff) < 0.01) {
-            box.innerHTML = "Perfect in balans! (50/50)";
+            box.innerHTML = "Perfectly balanced! (50/50)";
         } else if (diff > 0) {
-            box.innerHTML = `Nadine verschuldigd aan Erik: <b>$${diff.toFixed(2)}</b>`;
+            box.innerHTML = `Nadine owes Erik: <b>$${diff.toFixed(2)}</b>`;
         } else {
-            box.innerHTML = `Erik verschuldigd aan Nadine: <b>$${Math.abs(diff).toFixed(2)}</b>`;
+            box.innerHTML = `Erik owes Nadine: <b>$${Math.abs(diff).toFixed(2)}</b>`;
         }
     }
 
@@ -108,13 +108,13 @@
         document.getElementById('paidBy').value = paidBy;
         document.getElementById('category').value = category;
         document.getElementById('amount').value = amount;
-        document.getElementById('submitBtn').innerText = "BIJWERKEN";
+        document.getElementById('submitBtn').innerText = "UPDATE";
         editMode = true;
         window.scrollTo(0,0);
     }
 
     async function del(idx) {
-        if(!confirm("Verwijderen bevestigen?")) return;
+        if(!confirm("Confirm delete?")) return;
         try {
             await fetch(URL, { method: 'POST', body: JSON.stringify({ action: 'delete', index: idx }) });
             await refresh();
@@ -124,7 +124,7 @@
     document.getElementById('expenseForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.innerText = "Bezig...";
+        btn.innerText = "Busy...";
         btn.disabled = true;
         const action = editMode ? 'update' : 'add';
         
@@ -137,10 +137,10 @@
                 category: document.getElementById('category').value,
                 amount: document.getElementById('amount').value
             })});
-        } catch (err) { console.log("Fout bij opslaan."); } 
+        } catch (err) { console.log("Save error."); } 
         finally {
             document.getElementById('expenseForm').reset();
-            btn.innerText = "TOEVOEGEN";
+            btn.innerText = "ADD";
             btn.disabled = false;
             editMode = false;
             document.getElementById('date').valueAsDate = new Date();
